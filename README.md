@@ -102,8 +102,11 @@ Mapbox...).
   retrouver — voir `backend/services/experience.service.js`.
 - `vcard:Location` : l'adresse du domicile, ajoutée/modifiée directement dans l'app (voir
   `frontend/src/components/AddressEditor.tsx`) — visible aussi depuis le gestionnaire de
-  porte-données. Rendue publique en lecture à la création, même mécanisme que les compétences —
-  voir `backend/services/location.service.js`. Le consentement est demandé une seule fois, avant
+  porte-données. Contrairement aux compétences, cette ressource reste **privée** : seule une
+  position approximative (légèrement décalée aléatoirement, voir `JITTER_DEGREES` dans
+  `backend/services/location.service.js`) est recopiée sur le profil de l'utilisateur — déjà
+  visible nativement par ses contacts, sans action de partage supplémentaire. L'adresse exacte
+  n'est donc jamais exposée par l'application. Le consentement est demandé une seule fois, avant
   la première saisie.
 
 Les recommandations entre pairs ne sont pas encore implémentées dans cette version.

@@ -37,11 +37,11 @@ module.exports = {
         },
         {
           // Read/create/update the user's home address (added or edited directly from
-          // onboarding/profile, see AddressEditor), and make it publicly readable as soon as
-          // it's created so it can be shown on the map to their contacts — see
-          // location.service.js. Consent happens once, up front, in the UI.
+          // onboarding/profile, see AddressEditor). The Location resource itself stays private —
+          // only its (jittered) lat/lng gets copied onto the profile, see location.service.js —
+          // so no acl:Control needed here, unlike the other two access needs above.
           shapeTreeUri: urlJoin(CONFIG.SHAPE_REPOSITORY_URL, 'shapetrees/vcard/Location'),
-          accessMode: ['acl:Read', 'acl:Write', 'acl:Control']
+          accessMode: ['acl:Read', 'acl:Write']
         }
       ],
       optional: []

@@ -24,9 +24,10 @@ type Props = {
 };
 
 /** View/add/edit the user's own vcard:Location — self-contained, used both in onboarding and the
- * profile page. Made publicly readable (visible to contacts) automatically as soon as it's
- * created, same as skills — see backend/services/location.service.js. Consent is asked once, up
- * front, right here: the address input only appears once the user has agreed to that. */
+ * profile page. The Location itself (street address, postal code...) stays private; only an
+ * approximate (deliberately jittered) position gets copied onto the profile automatically, same
+ * moment skills become visible — see backend/services/location.service.js. Consent is asked
+ * once, up front, right here: the address input only appears once the user has agreed to that. */
 const AddressEditor = ({ onLocationChange }: Props) => {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -58,8 +59,9 @@ const AddressEditor = ({ onLocationChange }: Props) => {
       const addressFields = parseAddressFeature(feature);
 
       if (locationUri) {
-        // Update the existing Location resource in place — keeps the same URI, so nothing else
-        // (profile pointer, already-granted public-read permission) needs to change.
+        // Update the existing Location resource in place — keeps the same URI, so the profile
+        // pointer doesn't need to change (the backend's onUpdate hook re-syncs the profile's
+        // approximate position either way, see location.service.js).
         await updateLocation({
           resource: 'location',
           id: locationUri,
@@ -114,7 +116,7 @@ const AddressEditor = ({ onLocationChange }: Props) => {
         <div style={{ marginTop: 4 }}>
           <Space size={4}>
             <CheckCircleFilled style={{ color: '#52c41a' }} />
-            <Text type="secondary">Visible par vos contacts.</Text>
+            <Text type="secondary">Votre position approximative est visible par vos contacts.</Text>
           </Space>
         </div>
       </div>
@@ -127,8 +129,9 @@ const AddressEditor = ({ onLocationChange }: Props) => {
     <div>
       {!locationUri && (
         <Paragraph type="secondary" style={{ marginBottom: 8 }}>
-          Une fois enregistrée, votre adresse sera visible par vos contacts actuels (et par tout nouveau contact que
-          vous ajouterez par la suite).
+          Votre adresse exacte n'est jamais partagée. Seule une position approximative (à quelques centaines de
+          mètres près) sera visible par vos contacts actuels, et par tout nouveau contact que vous ajouterez par la
+          suite.
         </Paragraph>
       )}
       {locationUri || consent ? (
@@ -143,7 +146,7 @@ const AddressEditor = ({ onLocationChange }: Props) => {
         </Space>
       ) : (
         <Checkbox checked={consent} onChange={event => setConsent(event.target.checked)}>
-          J'accepte que mon adresse soit visible par mes contacts
+          J'accepte que ma position approximative soit visible par mes contacts
         </Checkbox>
       )}
       {error && (

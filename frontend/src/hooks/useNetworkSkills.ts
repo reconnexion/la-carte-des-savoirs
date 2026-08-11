@@ -142,24 +142,20 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
             );
             const skills = experiences.filter((skill): skill is NetworkSkill => Boolean(skill));
 
-            // Position: vcard:hasGeo is written by us (AddressEditor) directly onto the Location
-            // resource, nested two levels deep — Location --vcard:hasAddress--> (address blank
-            // node) --vcard:hasGeo--> {latitude, longitude}. It is NOT copied onto the profile
-            // unless the native pod-provider's own profile-edit form (a full PUT) is used — ours
-            // goes through a Solid PATCH instead (see AddressEditor), which doesn't trigger that.
+            // Position: backend/services/location.service.js copies a (deliberately jittered)
+            // lat/lng straight onto the profile whenever the user creates/edits their Location —
+            // already right here in the same profile record we fetched for name/photo/skills, no
+            // extra request needed. The Location resource itself stays private; this app never
+            // reads it directly.
             let lat: number | undefined;
             let lng: number | undefined;
-            const addressUri = asId(profile['vcard:hasAddress']);
-            if (addressUri) {
-              const location = await fetchResource(addressUri, token);
-              const geo = location?.['vcard:hasAddress']?.['vcard:hasGeo'];
-              if (geo) {
-                lat = Number(asLiteral(geo['vcard:latitude']));
-                lng = Number(asLiteral(geo['vcard:longitude']));
-                if (Number.isNaN(lat) || Number.isNaN(lng)) {
-                  lat = undefined;
-                  lng = undefined;
-                }
+            const geo = profile['vcard:hasGeo'];
+            if (geo) {
+              lat = Number(asLiteral(geo['vcard:latitude']));
+              lng = Number(asLiteral(geo['vcard:longitude']));
+              if (Number.isNaN(lat) || Number.isNaN(lng)) {
+                lat = undefined;
+                lng = undefined;
               }
             }
 
