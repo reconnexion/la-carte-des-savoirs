@@ -3,7 +3,7 @@ import { Layout, Spin } from 'antd';
 import { useNavigate } from 'react-router';
 import { useList } from '@refinedev/core';
 import AppHeader from '../components/AppHeader';
-import CategoryTree from '../components/CategoryTree';
+import CategoryMenu from '../components/CategoryMenu';
 import NetworkMap from '../components/NetworkMap';
 import MemberDrawer from '../components/MemberDrawer';
 import { useNetworkSkills } from '../hooks/useNetworkSkills';
@@ -53,11 +53,11 @@ const MapPage = () => {
   }
 
   return (
-    <Layout style={{ height: '100vh' }}>
+    <Layout style={{ height: '100vh', minHeight: 0 }}>
       <AppHeader />
-      <Layout>
-        <CategoryTree skills={skills} selectedSkillId={selectedSkillId} onSelect={setSelectedSkillId} />
-        <Content style={{ position: 'relative' }}>
+      <Layout style={{ flex: 1, minHeight: 0 }}>
+        <CategoryMenu skills={skills} selectedSkillId={selectedSkillId} onSelect={setSelectedSkillId} />
+        <Content style={{ position: 'relative', height: '100%', minHeight: 0 }}>
           {(catalogsLoading || membersLoading) && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
               <Spin size="large" />

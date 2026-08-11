@@ -130,21 +130,20 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
             );
             const skills = experiences.filter((skill): skill is NetworkSkill => Boolean(skill));
 
-            // Position: only available if the user consented to share it (see onboarding) — the
-            // vcard:Location resource is then publicly readable, same mechanism as skills above.
+            // Position: the Pod provider copies vcard:hasGeo onto the Profile itself when the
+            // address is saved (see @activitypods pod-provider's services/profiles/profile.ts,
+            // `before.put` hook) — it's NOT on the Location resource. Since it's embedded right
+            // on the profile we already fetched, no extra request (and no dependency on the
+            // separate "share my address" step) is needed to read it.
             let lat: number | undefined;
             let lng: number | undefined;
-            const addressUri = asId(profile['vcard:hasAddress']);
-            if (addressUri) {
-              const location = await fetchPublicResource(addressUri);
-              const geo = location?.['vcard:hasGeo'];
-              if (geo) {
-                lat = Number(asLiteral(geo['vcard:latitude']));
-                lng = Number(asLiteral(geo['vcard:longitude']));
-                if (Number.isNaN(lat) || Number.isNaN(lng)) {
-                  lat = undefined;
-                  lng = undefined;
-                }
+            const geo = profile['vcard:hasGeo'];
+            if (geo) {
+              lat = Number(asLiteral(geo['vcard:latitude']));
+              lng = Number(asLiteral(geo['vcard:longitude']));
+              if (Number.isNaN(lat) || Number.isNaN(lng)) {
+                lat = undefined;
+                lng = undefined;
               }
             }
 

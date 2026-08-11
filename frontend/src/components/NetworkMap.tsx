@@ -12,9 +12,11 @@ type Props = {
   onSelect: (member: NetworkMember) => void;
 };
 
+// Centered so continental France is visible as a whole on load, regardless of member locations.
+const FRANCE_VIEW = { longitude: 2.4, latitude: 46.6, zoom: 5.2 };
+
 const NetworkMap = ({ members, selectedWebId, onSelect }: Props) => {
   const located = members.filter(member => member.lat !== undefined && member.lng !== undefined);
-  const center = located[0] ?? { lat: 46.6, lng: 2.4 }; // Roughly the middle of France as a default
 
   if (!MAPBOX_ACCESS_TOKEN) {
     return (
@@ -27,7 +29,7 @@ const NetworkMap = ({ members, selectedWebId, onSelect }: Props) => {
   return (
     <Map
       mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
-      initialViewState={{ longitude: center.lng, latitude: center.lat, zoom: located.length > 0 ? 10 : 5 }}
+      initialViewState={FRANCE_VIEW}
       style={{ width: '100%', height: '100%' }}
       mapStyle="mapbox://styles/mapbox/streets-v12"
     >

@@ -50,6 +50,19 @@ module.exports = {
       }
     },
 
+    async onDelete(ctx, resource, actorUri) {
+      const resourceUri = resource.id || resource['@id'];
+
+      const profileUri = await this.getProfileUri(ctx, actorUri);
+      if (profileUri) {
+        await ctx.call('pod-resources.patch', {
+          resourceUri: profileUri,
+          triplesToRemove: [triple(namedNode(profileUri), namedNode(PAIR_HAS_EXPERIENCE), namedNode(resourceUri))],
+          actorUri
+        });
+      }
+    },
+
     async getProfileUri(ctx, actorUri) {
       const { body: webIdDoc } = await ctx.call('pod-resources.get', { resourceUri: actorUri, actorUri });
       for (const key of AS_URL_KEYS) {

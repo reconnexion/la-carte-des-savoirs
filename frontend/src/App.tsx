@@ -10,6 +10,7 @@ import '@refinedev/antd/dist/reset.css';
 import { authProvider, dataProvider, DEFAULT_POD_PROVIDER } from './providers';
 import MapPage from './pages/MapPage';
 import OnboardingPage from './pages/OnboardingPage';
+import ProfilePage from './pages/ProfilePage';
 
 const App = () => (
   <BrowserRouter>
@@ -41,6 +42,7 @@ const App = () => (
             >
               <Route index element={<MapPage />} />
               <Route path="/onboarding" element={<OnboardingPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Route>
 
             {/*
