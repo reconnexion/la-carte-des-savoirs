@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Checkbox, Button, Alert, Typography, Space } from 'antd';
+import { useEffect, useState } from 'react';
+import { Checkbox, Button, Alert, Typography, Space, Spin } from 'antd';
 import { CheckCircleFilled } from '@ant-design/icons';
 import { fetchJson } from '@activitypods/refine-providers/utils';
 import { authProvider } from '../providers';
@@ -7,17 +7,44 @@ import { authProvider } from '../providers';
 const { Text } = Typography;
 
 type Props = {
-  disabled?: boolean;
+  /** URI of the vcard:Location to share/check — undefined while there isn't one yet. */
+  locationUri?: string;
 };
 
 /** Lets the user share their (already-set) address with their contacts — see
  * backend/services/sharing.service.js for why this goes through a custom outbox activity rather
  * than a plain API call. */
-const ShareLocationConsent = ({ disabled }: Props) => {
+const ShareLocationConsent = ({ locationUri }: Props) => {
   const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string>();
+
+  // The component only ever had local state before, so it always started as "not shared" even
+  // if a previous share had actually succeeded (or the page was simply reloaded) — check whether
+  // the address is already publicly readable instead of assuming.
+  useEffect(() => {
+    if (!locationUri) {
+      setDone(false);
+      return;
+    }
+    let cancelled = false;
+    setChecking(true);
+    fetch(locationUri, { headers: { Accept: 'application/ld+json' } })
+      .then(response => {
+        if (!cancelled) setDone(response.ok);
+      })
+      .catch(() => {
+        if (!cancelled) setDone(false);
+      })
+      .finally(() => {
+        if (!cancelled) setChecking(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [locationUri]);
 
   const handleShare = async () => {
     setSubmitting(true);
@@ -43,14 +70,17 @@ const ShareLocationConsent = ({ disabled }: Props) => {
         session.token
       );
       setDone(true);
-    } catch (e) {
-      setError(
-        "Nous n'avons pas pu partager votre adresse pour le moment. Vous pourrez réessayer plus tard depuis votre profil."
-      );
+    } catch (e: any) {
+      // Surfacing the real error (rather than a generic message) on purpose while this flow is
+      // still being validated against the live Pod provider.
+      const status = e?.status ? ` (HTTP ${e.status})` : '';
+      setError(`Échec du partage${status} : ${e?.body?.message || e?.message || 'erreur inconnue'}`);
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (checking) return <Spin size="small" />;
 
   if (done) {
     return (
@@ -64,7 +94,7 @@ const ShareLocationConsent = ({ disabled }: Props) => {
   return (
     <div>
       <Space direction="vertical">
-        <Checkbox checked={consent} disabled={disabled} onChange={event => setConsent(event.target.checked)}>
+        <Checkbox checked={consent} disabled={!locationUri} onChange={event => setConsent(event.target.checked)}>
           Partager mon adresse avec mes contacts
         </Checkbox>
         {consent && (

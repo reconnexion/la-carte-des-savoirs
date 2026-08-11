@@ -19,14 +19,14 @@ const asId = (value: unknown): string | undefined => {
 };
 
 type Props = {
-  /** Called whenever we know whether the user currently has an address set. */
-  onHasAddressChange?: (hasAddress: boolean) => void;
+  /** Called whenever the current Location URI changes (undefined if there isn't one yet). */
+  onLocationChange?: (locationUri: string | undefined) => void;
 };
 
 /** View/add/edit the user's own vcard:Location — self-contained, used both in onboarding and the
  * profile page. See sharing.service.js / OnboardingPage for the separate "share with contacts"
- * consent, which only needs to know whether an address exists (see onHasAddressChange). */
-const AddressEditor = ({ onHasAddressChange }: Props) => {
+ * consent (ShareLocationConsent), which needs the location URI itself (see onLocationChange). */
+const AddressEditor = ({ onLocationChange }: Props) => {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
@@ -42,7 +42,7 @@ const AddressEditor = ({ onHasAddressChange }: Props) => {
   const currentAddressLabel = (location as any)?.['vcard:hasAddress']?.['vcard:given-name'];
 
   useEffect(() => {
-    onHasAddressChange?.(Boolean(locationUri));
+    onLocationChange?.(locationUri);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locationUri]);
 
@@ -89,8 +89,9 @@ const AddressEditor = ({ onHasAddressChange }: Props) => {
       await refetchProfile();
       await locationQuery.refetch();
       setEditing(false);
-    } catch (e) {
-      setError("Impossible d'enregistrer cette adresse pour le moment.");
+    } catch (e: any) {
+      const status = e?.status ? ` (HTTP ${e.status})` : '';
+      setError(`Impossible d'enregistrer cette adresse${status} : ${e?.body?.message || e?.message || 'erreur inconnue'}`);
     } finally {
       setSaving(false);
     }

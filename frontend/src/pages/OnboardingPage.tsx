@@ -85,7 +85,7 @@ const AddSkillsStep = ({
 };
 
 const AddressConsentStep = ({ onNext }: { onNext: () => void }) => {
-  const [hasAddress, setHasAddress] = useState(false);
+  const [locationUri, setLocationUri] = useState<string>();
 
   return (
     <Card>
@@ -97,7 +97,7 @@ const AddressConsentStep = ({ onNext }: { onNext: () => void }) => {
       </Paragraph>
 
       <div style={{ marginBottom: 24 }}>
-        <AddressEditor onHasAddressChange={setHasAddress} />
+        <AddressEditor onLocationChange={setLocationUri} />
       </div>
 
       <Paragraph type="secondary">
@@ -106,7 +106,7 @@ const AddressConsentStep = ({ onNext }: { onNext: () => void }) => {
         cependant jamais qu'à vos contacts actuels.
       </Paragraph>
 
-      <ShareLocationConsent disabled={!hasAddress} />
+      <ShareLocationConsent locationUri={locationUri} />
 
       <div>
         <Button type="primary" style={{ marginTop: 24 }} onClick={onNext}>

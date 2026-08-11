@@ -42,7 +42,7 @@ const ProfilePage = () => {
   const { result: experiences, query: experiencesQuery } = useList({ resource: 'experiences', pagination: { pageSize: 200 } });
   const { mutateAsync: createExperience, mutation: createMutation } = useCreate();
   const { mutateAsync: deleteExperience } = useDelete();
-  const [hasAddress, setHasAddress] = useState(false);
+  const [locationUri, setLocationUri] = useState<string>();
 
   const ownSkills = resolveOwnSkills(experiences.data, skills, grades);
 
@@ -111,9 +111,9 @@ const ProfilePage = () => {
 
           <Title level={4}>Mon adresse</Title>
           <div style={{ marginBottom: 16 }}>
-            <AddressEditor onHasAddressChange={setHasAddress} />
+            <AddressEditor onLocationChange={setLocationUri} />
           </div>
-          <ShareLocationConsent disabled={!hasAddress} />
+          <ShareLocationConsent locationUri={locationUri} />
         </Card>
       </Content>
     </Layout>

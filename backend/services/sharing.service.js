@@ -14,6 +14,8 @@ module.exports = {
         type: 'ShareLocation'
       },
       async onEmit(ctx, activity, actorUri) {
+        this.logger.info(`Received ShareLocation from ${actorUri}`);
+
         const profileUri = await this.getProfileUri(ctx, actorUri);
         if (!profileUri) {
           this.logger.warn(`Could not resolve the profile of ${actorUri}: skipping location sharing`);
@@ -34,6 +36,8 @@ module.exports = {
           mode: 'acl:Read',
           actorUri
         });
+
+        this.logger.info(`Made ${addressUri} publicly readable for ${actorUri}`);
       }
     }
   },
