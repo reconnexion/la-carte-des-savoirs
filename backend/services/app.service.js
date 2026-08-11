@@ -24,9 +24,7 @@ module.exports = {
       required: [
         {
           // Declares what a user creates when they add a skill to the map.
-          // Hosted in our own shape repository until merged into shapes.activitypods.org
-          // (https://github.com/activitypods/shapes/pull/new/add-pair-experience-association).
-          shapeTreeUri: urlJoin(CONFIG.CUSTOM_SHAPE_REPOSITORY_URL, 'shapetrees/pair/ExperienceAssociation'),
+          shapeTreeUri: urlJoin(CONFIG.SHAPE_REPOSITORY_URL, 'shapetrees/pair/ExperienceAssociation'),
           // acl:Control is required so we can make new skills publicly readable (see
           // experience.service.js) instead of running a per-contact sharing flow.
           accessMode: ['acl:Read', 'acl:Write', 'acl:Control']

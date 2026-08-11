@@ -11,7 +11,6 @@ export const CLIENT_ID = import.meta.env.VITE_BACKEND_CLIENT_ID as string;
 export const DEFAULT_POD_PROVIDER = import.meta.env.VITE_POD_PROVIDER_BASE_URL as string | undefined;
 
 const SHAPE_REPOSITORY_URL = import.meta.env.VITE_SHAPE_REPOSITORY_URL as string;
-const CUSTOM_SHAPE_REPOSITORY_URL = import.meta.env.VITE_CUSTOM_SHAPE_REPOSITORY_URL as string;
 
 export const authProvider = apAuthProvider({
   clientId: CLIENT_ID
@@ -20,10 +19,9 @@ export const authProvider = apAuthProvider({
 export const dataProvider = apDataProvider({
   authProvider,
   resources: {
-    // A declared skill: pair:ExperienceAssociation (see docs/plan for why the shape tree is
-    // hosted separately from shapes.activitypods.org for now).
+    // A declared skill: pair:ExperienceAssociation.
     experiences: {
-      shapeTreeUri: `${CUSTOM_SHAPE_REPOSITORY_URL}shapetrees/pair/ExperienceAssociation`
+      shapeTreeUri: `${SHAPE_REPOSITORY_URL}shapetrees/pair/ExperienceAssociation`
     },
     // The connected user's own profile, and (via getList) every profile they can currently read
     // (themselves + their contacts, natively enforced by the Pod provider).

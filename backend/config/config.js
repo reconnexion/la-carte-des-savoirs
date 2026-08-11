@@ -9,9 +9,6 @@ module.exports = {
   HOME_URL: process.env.SEMAPPS_HOME_URL,
   FRONT_URL: process.env.SEMAPPS_FRONT_URL,
   SHAPE_REPOSITORY_URL: process.env.SEMAPPS_SHAPE_REPOSITORY_URL,
-  // Shape repository hosting our own pair:ExperienceAssociation shape tree, pending merge into
-  // the shared https://shapes.activitypods.org repository (see activitypods/shapes PR).
-  CUSTOM_SHAPE_REPOSITORY_URL: process.env.SEMAPPS_CUSTOM_SHAPE_REPOSITORY_URL,
   PORT: process.env.SEMAPPS_PORT,
   SPARQL_ENDPOINT: process.env.SEMAPPS_SPARQL_ENDPOINT,
   MAIN_DATASET: process.env.SEMAPPS_MAIN_DATASET,

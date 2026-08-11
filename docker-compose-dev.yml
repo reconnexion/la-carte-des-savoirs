@@ -43,21 +43,6 @@ services:
     environment:
       REACT_APP_CONFIG_URL: "http://localhost:3000/.well-known/config.js"
 
-  # Serves our own pair:ExperienceAssociation shape + shape tree locally, until it is merged into
-  # https://github.com/activitypods/shapes and deployed on https://shapes.activitypods.org. See
-  # SEMAPPS_CUSTOM_SHAPE_REPOSITORY_URL / VITE_CUSTOM_SHAPE_REPOSITORY_URL. Our shapes aren't in
-  # this image yet (PR pending), so until it's merged, run the shape repo from a local checkout
-  # instead (`git clone git@github.com:activitypods/shapes.git && yarn start`, see README).
-  shapes:
-    image: activitypods/shapes:latest
-    restart: always
-    ports:
-      - "30916:30916"
-    expose:
-      - "30916"
-    environment:
-      BASE_URL: "http://localhost:30916"
-
   mailcatcher:
     image: dockage/mailcatcher
     ports:

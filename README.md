@@ -38,21 +38,16 @@ Deux choix d'architecture notables, détaillés dans les commentaires du code (v
 ## Prérequis
 
 - Un token d'accès Mapbox : <https://docs.mapbox.com/help/getting-started/access-tokens/>
-- Le shape tree `pair:ExperienceAssociation` n'est pas encore fusionné dans
-  [`activitypods/shapes`](https://github.com/activitypods/shapes) (voir la PR ouverte depuis ce
-  dépôt). En attendant, lancez une instance locale du dépôt de shapes :
-  ```bash
-  git clone git@github.com:activitypods/shapes.git
-  cd shapes && yarn install && yarn start
-  # → http://localhost:30916
-  ```
-  ou utilisez le service `shapes` du `docker-compose-dev.yml` une fois la PR mergée et l'image
-  `activitypods/shapes:latest` republiée avec ce shape.
+
+Le shape tree `pair:ExperienceAssociation` est déployé sur
+<https://shapes.activitypods.org/shapetrees/pair/ExperienceAssociation> (voir la PR mergée dans
+[`activitypods/shapes`](https://github.com/activitypods/shapes)) — rien à lancer localement pour
+ça.
 
 ## Développement
 
 1. Copiez `.env` en `.env.local` à la racine et renseignez `MAPBOX_ACCESS_TOKEN`.
-2. Démarrez le pod provider de développement (fuseki, activitypods, redis, arena, shapes) :
+2. Démarrez le pod provider de développement (fuseki, activitypods, redis, arena) :
    ```bash
    make start
    ```

@@ -15,9 +15,8 @@ module.exports = {
   name: 'experience',
   mixins: [PodResourcesHandlerMixin],
   settings: {
-    // Hosted in our own shape repository until merged into shapes.activitypods.org (see
-    // app.service.js for the same URI used in the access need).
-    shapeTreeUri: urlJoin(CONFIG.CUSTOM_SHAPE_REPOSITORY_URL, 'shapetrees/pair/ExperienceAssociation')
+    // See app.service.js for the same URI used in the access need.
+    shapeTreeUri: urlJoin(CONFIG.SHAPE_REPOSITORY_URL, 'shapetrees/pair/ExperienceAssociation')
   },
   methods: {
     async onCreate(ctx, resource, actorUri) {
