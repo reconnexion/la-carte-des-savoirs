@@ -1,0 +1,6 @@
+[
+  { "label": "Débutant", "position": 1 },
+  { "label": "Intermédiaire", "position": 2 },
+  { "label": "Confirmé", "position": 3 },
+  { "label": "Expert", "position": 4 }
+]

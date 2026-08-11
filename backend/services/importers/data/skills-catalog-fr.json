@@ -1,0 +1,80 @@
+[
+  { "label": "Alimentation et cuisine" },
+  { "label": "Jardinage et nature" },
+  { "label": "Bricolage et fabrication" },
+  { "label": "Numérique et informatique" },
+  { "label": "Bien-être et santé" },
+  { "label": "Arts et créativité" },
+  { "label": "Savoirs de la maison" },
+  { "label": "Mobilité et mécanique" },
+  { "label": "Éducation et langues" },
+  { "label": "Administratif et juridique" },
+  { "label": "Communication et organisation" },
+  { "label": "Savoir-être et entraide" },
+
+  { "label": "Cuisine végétarienne", "parent": "alimentation-et-cuisine" },
+  { "label": "Pâtisserie", "parent": "alimentation-et-cuisine" },
+  { "label": "Fermentation (kéfir, kombucha, choucroute...)", "parent": "alimentation-et-cuisine" },
+  { "label": "Conservation et conserves maison", "parent": "alimentation-et-cuisine" },
+  { "label": "Brassage de bière maison", "parent": "alimentation-et-cuisine" },
+
+  { "label": "Permaculture", "parent": "jardinage-et-nature" },
+  { "label": "Potager", "parent": "jardinage-et-nature" },
+  { "label": "Arbres fruitiers et taille", "parent": "jardinage-et-nature" },
+  { "label": "Apiculture", "parent": "jardinage-et-nature" },
+  { "label": "Botanique et plantes sauvages", "parent": "jardinage-et-nature" },
+
+  { "label": "Menuiserie", "parent": "bricolage-et-fabrication" },
+  { "label": "Électricité", "parent": "bricolage-et-fabrication" },
+  { "label": "Plomberie", "parent": "bricolage-et-fabrication" },
+  { "label": "Couture", "parent": "bricolage-et-fabrication" },
+  { "label": "Réparation de vélo", "parent": "bricolage-et-fabrication" },
+
+  { "label": "Développement web", "parent": "numerique-et-informatique" },
+  { "label": "Dépannage informatique", "parent": "numerique-et-informatique" },
+  { "label": "Montage vidéo", "parent": "numerique-et-informatique" },
+  { "label": "Bureautique", "parent": "numerique-et-informatique" },
+  { "label": "Photographie numérique", "parent": "numerique-et-informatique" },
+
+  { "label": "Massage", "parent": "bien-etre-et-sante" },
+  { "label": "Yoga", "parent": "bien-etre-et-sante" },
+  { "label": "Premiers secours", "parent": "bien-etre-et-sante" },
+  { "label": "Naturopathie", "parent": "bien-etre-et-sante" },
+  { "label": "Méditation", "parent": "bien-etre-et-sante" },
+
+  { "label": "Dessin et peinture", "parent": "arts-et-creativite" },
+  { "label": "Musique", "parent": "arts-et-creativite" },
+  { "label": "Théâtre", "parent": "arts-et-creativite" },
+  { "label": "Céramique et poterie", "parent": "arts-et-creativite" },
+  { "label": "Écriture créative", "parent": "arts-et-creativite" },
+
+  { "label": "Tricot et crochet", "parent": "savoirs-de-la-maison" },
+  { "label": "Ménage écologique", "parent": "savoirs-de-la-maison" },
+  { "label": "Rangement et minimalisme", "parent": "savoirs-de-la-maison" },
+  { "label": "Cuisine du quotidien", "parent": "savoirs-de-la-maison" },
+
+  { "label": "Mécanique automobile", "parent": "mobilite-et-mecanique" },
+  { "label": "Mécanique vélo", "parent": "mobilite-et-mecanique" },
+  { "label": "Apprentissage de la conduite", "parent": "mobilite-et-mecanique" },
+  { "label": "Navigation et voile", "parent": "mobilite-et-mecanique" },
+
+  { "label": "Soutien scolaire", "parent": "education-et-langues" },
+  { "label": "Langues étrangères", "parent": "education-et-langues" },
+  { "label": "Lecture à voix haute", "parent": "education-et-langues" },
+  { "label": "Prise de parole en public", "parent": "education-et-langues" },
+
+  { "label": "Démarches administratives", "parent": "administratif-et-juridique" },
+  { "label": "Droit du travail", "parent": "administratif-et-juridique" },
+  { "label": "Comptabilité", "parent": "administratif-et-juridique" },
+  { "label": "Rédaction de courriers", "parent": "administratif-et-juridique" },
+
+  { "label": "Gestion de projet", "parent": "communication-et-organisation" },
+  { "label": "Animation de groupe", "parent": "communication-et-organisation" },
+  { "label": "Facilitation de réunions", "parent": "communication-et-organisation" },
+  { "label": "Community management", "parent": "communication-et-organisation" },
+
+  { "label": "Garde d'enfants", "parent": "savoir-etre-et-entraide" },
+  { "label": "Accompagnement et écoute", "parent": "savoir-etre-et-entraide" },
+  { "label": "Médiation de conflits", "parent": "savoir-etre-et-entraide" },
+  { "label": "Aide aux démarches numériques", "parent": "savoir-etre-et-entraide" }
+]
