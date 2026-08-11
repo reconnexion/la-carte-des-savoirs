@@ -6,6 +6,9 @@ const CONFIG = require('../../config/config');
 module.exports = {
   name: 'importers.skills-catalog',
   mixins: [ImporterMixin],
+  // Without this, started() can fire before skills-catalog.service.js has finished creating the
+  // /pair/skill container (its own started() hook), silently failing the first several imports.
+  dependencies: ['skills-catalog'],
   settings: {
     source: {
       getAllFull: path.resolve(__dirname, `./data/skills-catalog-${CONFIG.APP_LANG}.json`),

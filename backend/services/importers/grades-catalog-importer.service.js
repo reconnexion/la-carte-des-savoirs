@@ -6,6 +6,8 @@ const CONFIG = require('../../config/config');
 module.exports = {
   name: 'importers.grades-catalog',
   mixins: [ImporterMixin],
+  // See skills-catalog-importer.service.js for why this is needed.
+  dependencies: ['grades-catalog'],
   settings: {
     source: {
       getAllFull: path.resolve(__dirname, `./data/grades-catalog-${CONFIG.APP_LANG}.json`),
