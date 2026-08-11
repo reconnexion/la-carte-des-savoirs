@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Space, Typography, Button, Spin } from 'antd';
 import { EditOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { useCreate, useOne, useUpdate } from '@refinedev/core';
+import { fetchJson } from '@activitypods/refine-providers/utils';
 import { useOwnProfile } from '../hooks/useOwnProfile';
 import AddressAutocomplete from './AddressAutocomplete';
 import { parseAddressFeature } from '../config/mapbox';
 import type { MapboxFeature } from '../config/mapbox';
+import { authProvider } from '../providers';
 
 const { Text } = Typography;
 
@@ -46,7 +48,6 @@ const AddressEditor = ({ onHasAddressChange }: Props) => {
 
   const { mutateAsync: createLocation } = useCreate();
   const { mutateAsync: updateLocation } = useUpdate();
-  const { mutateAsync: updateProfile } = useUpdate();
 
   const handleSelectAddress = async (feature: MapboxFeature) => {
     setSaving(true);
@@ -67,14 +68,22 @@ const AddressEditor = ({ onHasAddressChange }: Props) => {
           resource: 'location',
           values: { 'vcard:given-name': 'Domicile', 'vcard:hasAddress': addressFields }
         });
-        // Read-modify-write: the data provider's update() does a full PUT, so we need to resend
-        // the whole profile (not just the new field) or we'd wipe out the rest of it.
-        const { id: profileId, '@context': _context, ...profileFields } = profile as any;
-        await updateProfile({
-          resource: 'profile',
-          id: profileId,
-          values: { ...profileFields, 'vcard:hasAddress': { '@id': (newLocation as any).id } }
-        });
+
+        // A PUT here would need to resend the whole profile (the data provider's update() fully
+        // overwrites), which turned out to 422 — some field on the fetched profile doesn't
+        // round-trip cleanly. A Solid PATCH (SPARQL Update) only touches the one triple we
+        // actually want to add, so it's both safer and simpler.
+        const session = authProvider.getSession();
+        if (!session) throw new Error('Not authenticated');
+        await fetchJson(
+          (profile as any).id,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/sparql-update' },
+            body: `PREFIX vcard: <http://www.w3.org/2006/vcard/ns#>\nINSERT DATA { <${(profile as any).id}> vcard:hasAddress <${(newLocation as any).id}> . }`
+          },
+          session.token
+        );
       }
 
       await refetchProfile();

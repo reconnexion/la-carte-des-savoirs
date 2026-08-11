@@ -53,10 +53,11 @@ const MapPage = () => {
   }
 
   return (
-    <Layout>
+    // 100vh rather than a % chain: percentages need every single ancestor div (including ones
+    // outside our control, e.g. antd's own <App> wrapper) to resolve a definite height, whereas
+    // vh is purely viewport-relative and doesn't depend on the DOM ancestor chain at all.
+    <Layout style={{ height: '100vh' }}>
       <AppHeader />
-      {/* Fixed calc() instead of a flex/percentage cascade (Antd's Header is a known 64px) —
-          more robust than relying on every ancestor Layout resolving a definite height. */}
       <Layout style={{ height: 'calc(100vh - 64px)' }}>
         <CategoryMenu skills={skills} selectedSkillId={selectedSkillId} onSelect={setSelectedSkillId} />
         <Content style={{ position: 'relative', height: '100%' }}>

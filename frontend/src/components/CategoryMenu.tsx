@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Menu, Layout } from 'antd';
+import { useMemo, useState } from 'react';
+import { Menu, Layout, Button } from 'antd';
 import {
   AppstoreOutlined,
   CoffeeOutlined,
@@ -14,7 +14,9 @@ import {
   BankOutlined,
   TeamOutlined,
   SmileOutlined,
-  TagOutlined
+  TagOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined
 } from '@ant-design/icons';
 import type { SkillCatalogEntry } from '../config/catalog';
 import { buildSkillsTree } from '../config/catalog';
@@ -49,13 +51,8 @@ type Props = {
 const CategoryMenu = ({ skills, selectedSkillId, onSelect }: Props) => {
   const tree = useMemo(() => buildSkillsTree(skills), [skills]);
 
-  // Controlled (not defaultOpenKeys): the catalog loads asynchronously, so the menu can easily
-  // mount before `tree` has any categories yet — defaultOpenKeys only applies once, at that
-  // first (empty) mount, and would never open once the categories actually arrive.
   const [openKeys, setOpenKeys] = useState<string[]>([]);
-  useEffect(() => {
-    if (tree.length > 0) setOpenKeys(tree.map(category => category.id));
-  }, [tree]);
+  const [collapsed, setCollapsed] = useState(false);
 
   const items = [
     { key: ALL_KEY, icon: <AppstoreOutlined />, label: 'Toutes les compétences' },
@@ -68,10 +65,26 @@ const CategoryMenu = ({ skills, selectedSkillId, onSelect }: Props) => {
   ];
 
   return (
-    <Sider width={272} theme="light" collapsible breakpoint="lg" style={{ borderRight: '1px solid #f0f0f0', overflow: 'auto' }}>
+    <Sider
+      width={272}
+      theme="light"
+      collapsible
+      collapsed={collapsed}
+      onCollapse={setCollapsed}
+      breakpoint="lg"
+      trigger={null}
+      style={{ borderRight: '1px solid #f0f0f0', overflow: 'auto' }}
+    >
+      <div style={{ display: 'flex', justifyContent: collapsed ? 'center' : 'flex-end', padding: 8 }}>
+        <Button
+          type="text"
+          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          onClick={() => setCollapsed(!collapsed)}
+        />
+      </div>
       <Menu
         mode="inline"
-        style={{ borderRight: 0, paddingTop: 8 }}
+        style={{ borderRight: 0 }}
         selectedKeys={[selectedSkillId ?? ALL_KEY]}
         openKeys={openKeys}
         onOpenChange={setOpenKeys}
