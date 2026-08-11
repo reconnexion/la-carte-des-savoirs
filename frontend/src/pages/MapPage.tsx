@@ -53,11 +53,13 @@ const MapPage = () => {
   }
 
   return (
-    <Layout style={{ height: '100vh', minHeight: 0 }}>
+    <Layout>
       <AppHeader />
-      <Layout style={{ flex: 1, minHeight: 0 }}>
+      {/* Fixed calc() instead of a flex/percentage cascade (Antd's Header is a known 64px) —
+          more robust than relying on every ancestor Layout resolving a definite height. */}
+      <Layout style={{ height: 'calc(100vh - 64px)' }}>
         <CategoryMenu skills={skills} selectedSkillId={selectedSkillId} onSelect={setSelectedSkillId} />
-        <Content style={{ position: 'relative', height: '100%', minHeight: 0 }}>
+        <Content style={{ position: 'relative', height: '100%' }}>
           {(catalogsLoading || membersLoading) && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1 }}>
               <Spin size="large" />

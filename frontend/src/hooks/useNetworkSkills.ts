@@ -164,7 +164,13 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
     return () => {
       cancelled = true;
     };
-  }, [profilesResult, identity, skillsById, gradesById]);
+    // profilesQuery.dataUpdatedAt (a timestamp, not an object reference) is used instead of
+    // profilesResult itself: Refine reconstructs that wrapper object on every render regardless
+    // of whether the underlying data actually changed, which turned this into an infinite loop
+    // (each run called setMembers/setLoading, triggering a re-render, producing a new wrapper,
+    // re-triggering the effect...).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profilesQuery.dataUpdatedAt, identity?.id, skillsById, gradesById]);
 
   return { members, loading: profilesLoading || loading };
 };
