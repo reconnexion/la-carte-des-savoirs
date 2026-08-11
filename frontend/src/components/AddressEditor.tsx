@@ -62,10 +62,17 @@ const AddressEditor = ({ onLocationChange }: Props) => {
         // Update the existing Location resource in place — keeps the same URI, so the profile
         // pointer doesn't need to change (the backend's onUpdate hook re-syncs the profile's
         // approximate position either way, see location.service.js).
+        //
+        // '@type' must be included explicitly: unlike create() (which adds it automatically from
+        // the resolved shape tree), update() does a full PUT of exactly what we send — omitting
+        // it silently strips the resource's own type declaration, which then stops matching the
+        // vcard:Location shape tree our backend listens for (confirmed by inspecting the actual
+        // triplestore: a first attempt without this left rdf:type, dc:created, dc:modified and
+        // dc:creator all wiped from the resource).
         await updateLocation({
           resource: 'location',
           id: locationUri,
-          values: { 'vcard:given-name': 'Domicile', 'vcard:hasAddress': addressFields }
+          values: { '@type': 'vcard:Location', 'vcard:given-name': 'Domicile', 'vcard:hasAddress': addressFields }
         });
       } else if (profile) {
         const { data: newLocation } = await createLocation({
