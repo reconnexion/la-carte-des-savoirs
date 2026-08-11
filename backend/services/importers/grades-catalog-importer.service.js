@@ -1,6 +1,7 @@
 const path = require('path');
 const urlJoin = require('url-join');
 const { ImporterMixin } = require('@semapps/importer');
+const { MIME_TYPES } = require('@semapps/mime-types');
 const CONFIG = require('../../config/config');
 
 module.exports = {
@@ -29,6 +30,16 @@ module.exports = {
     }
   },
   async started() {
-    await this.actions.freshImport({ clear: false });
+    // See skills-catalog-importer.service.js for why this guard is needed: without it, every
+    // backend restart creates a fresh set of duplicates (slug collisions get a numeric suffix
+    // rather than being reused/updated).
+    const container = await this.broker.call('ldp.container.get', {
+      containerUri: this.settings.dest.containerUri,
+      accept: MIME_TYPES.JSON,
+      webId: 'system'
+    });
+    if (!container?.['ldp:contains']?.length) {
+      await this.actions.freshImport({ clear: false });
+    }
   }
 };
