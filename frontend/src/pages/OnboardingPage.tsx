@@ -7,10 +7,9 @@ import { useCatalogs } from '../hooks/useCatalogs';
 import SkillPicker from '../components/SkillPicker';
 import type { PickedSkill } from '../components/SkillPicker';
 import AddressEditor from '../components/AddressEditor';
-import ShareLocationConsent from '../components/ShareLocationConsent';
 
 const { Content } = Layout;
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 const AddSkillsStep = ({
   skills,
@@ -84,38 +83,24 @@ const AddSkillsStep = ({
   );
 };
 
-const AddressConsentStep = ({ onNext }: { onNext: () => void }) => {
-  const [locationUri, setLocationUri] = useState<string>();
+const AddressConsentStep = ({ onNext }: { onNext: () => void }) => (
+  <Card>
+    <Title level={4}>Votre adresse</Title>
+    <Paragraph>
+      Pour apparaître sur la carte, ajoutez votre adresse approximative ici — elle sera aussi visible et modifiable
+      depuis votre gestionnaire de porte-données (le tableau de bord de votre Pod ActivityPods). Vous pouvez aussi
+      passer cette étape et l'ajouter plus tard depuis votre profil.
+    </Paragraph>
 
-  return (
-    <Card>
-      <Title level={4}>Votre adresse</Title>
-      <Paragraph>
-        Pour apparaître sur la carte, vos contacts doivent pouvoir voir votre adresse approximative. Vous pouvez
-        l'ajouter ou la modifier ici — elle sera aussi visible et modifiable depuis votre{' '}
-        <Text strong>gestionnaire de porte-données</Text> (le tableau de bord de votre Pod ActivityPods).
-      </Paragraph>
+    <div style={{ marginBottom: 24 }}>
+      <AddressEditor />
+    </div>
 
-      <div style={{ marginBottom: 24 }}>
-        <AddressEditor onLocationChange={setLocationUri} />
-      </div>
-
-      <Paragraph type="secondary">
-        Une fois partagée, votre adresse reste visible par toute personne connaissant son adresse web exacte, même si
-        vous retirez un contact par la suite — comme pour vos compétences, "La Carte des Savoirs" ne l'affiche
-        cependant jamais qu'à vos contacts actuels.
-      </Paragraph>
-
-      <ShareLocationConsent locationUri={locationUri} />
-
-      <div>
-        <Button type="primary" style={{ marginTop: 24 }} onClick={onNext}>
-          Suivant
-        </Button>
-      </div>
-    </Card>
-  );
-};
+    <Button type="primary" onClick={onNext}>
+      Suivant
+    </Button>
+  </Card>
+);
 
 const OnboardingPage = () => {
   const navigate = useNavigate();

@@ -100,9 +100,11 @@ Mapbox...).
   ci-dessus, + `as:summary` optionnel). Rendue publique en lecture à la création, et référencée
   depuis le profil de l'utilisateur (`pair:hasExperience`) pour que ses contacts puissent la
   retrouver — voir `backend/services/experience.service.js`.
-- L'adresse du domicile reste gérée nativement par le gestionnaire de porte-données
-  (`vcard:Location`/`vcard:hasGeo`) ; l'application ne fait que demander le consentement de
-  l'utilisateur pour la rendre publique en lecture, via `backend/services/sharing.service.js`.
+- `vcard:Location` : l'adresse du domicile, ajoutée/modifiée directement dans l'app (voir
+  `frontend/src/components/AddressEditor.tsx`) — visible aussi depuis le gestionnaire de
+  porte-données. Rendue publique en lecture à la création, même mécanisme que les compétences —
+  voir `backend/services/location.service.js`. Le consentement est demandé une seule fois, avant
+  la première saisie.
 
 Les recommandations entre pairs ne sont pas encore implémentées dans cette version.
 

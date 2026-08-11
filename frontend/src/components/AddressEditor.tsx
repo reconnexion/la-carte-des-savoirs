@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Space, Typography, Button, Spin } from 'antd';
-import { EditOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { Space, Typography, Button, Spin, Checkbox, Alert } from 'antd';
+import { EditOutlined, EnvironmentOutlined, CheckCircleFilled } from '@ant-design/icons';
 import { useCreate, useOne, useUpdate } from '@refinedev/core';
 import { fetchJson } from '@activitypods/refine-providers/utils';
 import { useOwnProfile } from '../hooks/useOwnProfile';
@@ -9,7 +9,7 @@ import { parseAddressFeature } from '../config/mapbox';
 import type { MapboxFeature } from '../config/mapbox';
 import { authProvider } from '../providers';
 
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 const asId = (value: unknown): string | undefined => {
   if (!value) return undefined;
@@ -24,12 +24,14 @@ type Props = {
 };
 
 /** View/add/edit the user's own vcard:Location — self-contained, used both in onboarding and the
- * profile page. See sharing.service.js / OnboardingPage for the separate "share with contacts"
- * consent (ShareLocationConsent), which needs the location URI itself (see onLocationChange). */
+ * profile page. Made publicly readable (visible to contacts) automatically as soon as it's
+ * created, same as skills — see backend/services/location.service.js. Consent is asked once, up
+ * front, right here: the address input only appears once the user has agreed to that. */
 const AddressEditor = ({ onLocationChange }: Props) => {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string>();
+  const [consent, setConsent] = useState(false);
 
   const { profile, isLoading: profileLoading, refetch: refetchProfile } = useOwnProfile();
   const locationUri = asId(profile?.['vcard:hasAddress']);
@@ -57,7 +59,7 @@ const AddressEditor = ({ onLocationChange }: Props) => {
 
       if (locationUri) {
         // Update the existing Location resource in place — keeps the same URI, so nothing else
-        // (profile pointer, any already-granted public-read permission) needs to change.
+        // (profile pointer, already-granted public-read permission) needs to change.
         await updateLocation({
           resource: 'location',
           id: locationUri,
@@ -99,9 +101,9 @@ const AddressEditor = ({ onLocationChange }: Props) => {
 
   if (profileLoading) return <Spin />;
 
-  return (
-    <div>
-      {locationUri && !editing ? (
+  if (locationUri && !editing) {
+    return (
+      <div>
         <Space>
           <EnvironmentOutlined />
           <Text>{locationQuery.isLoading ? <Spin size="small" /> : currentAddressLabel || 'Adresse enregistrée'}</Text>
@@ -109,7 +111,27 @@ const AddressEditor = ({ onLocationChange }: Props) => {
             Modifier
           </Button>
         </Space>
-      ) : (
+        <div style={{ marginTop: 4 }}>
+          <Space size={4}>
+            <CheckCircleFilled style={{ color: '#52c41a' }} />
+            <Text type="secondary">Visible par vos contacts.</Text>
+          </Space>
+        </div>
+      </div>
+    );
+  }
+
+  // No address yet (or editing): the address input only appears once the user has agreed it will
+  // become visible to their contacts, since it's made public as soon as it's saved.
+  return (
+    <div>
+      {!locationUri && (
+        <Paragraph type="secondary" style={{ marginBottom: 8 }}>
+          Une fois enregistrée, votre adresse sera visible par vos contacts actuels (et par tout nouveau contact que
+          vous ajouterez par la suite).
+        </Paragraph>
+      )}
+      {locationUri || consent ? (
         <Space direction="vertical" style={{ width: '100%' }}>
           <AddressAutocomplete onSelect={handleSelectAddress} />
           {saving && <Spin size="small" />}
@@ -119,8 +141,14 @@ const AddressEditor = ({ onLocationChange }: Props) => {
             </Button>
           )}
         </Space>
+      ) : (
+        <Checkbox checked={consent} onChange={event => setConsent(event.target.checked)}>
+          J'accepte que mon adresse soit visible par mes contacts
+        </Checkbox>
       )}
-      {error && <Text type="danger">{error}</Text>}
+      {error && (
+        <Alert style={{ marginTop: 8 }} type="error" message={error} />
+      )}
     </div>
   );
 };

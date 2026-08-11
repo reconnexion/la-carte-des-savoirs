@@ -37,14 +37,12 @@ module.exports = {
         },
         {
           // Read/create/update the user's home address (added or edited directly from
-          // onboarding, see frontend/src/pages/OnboardingPage.tsx), and — if they consent —
-          // make it publicly readable so it can be shown on the map to their contacts.
+          // onboarding/profile, see AddressEditor), and make it publicly readable as soon as
+          // it's created so it can be shown on the map to their contacts — see
+          // location.service.js. Consent happens once, up front, in the UI.
           shapeTreeUri: urlJoin(CONFIG.SHAPE_REPOSITORY_URL, 'shapetrees/vcard/Location'),
           accessMode: ['acl:Read', 'acl:Write', 'acl:Control']
-        },
-        'apods:ReadInbox',
-        'apods:ReadOutbox',
-        'apods:PostOutbox'
+        }
       ],
       optional: []
     },

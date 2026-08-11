@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Layout, Card, Typography, List, Tag, Button, Avatar, Space, Divider, message } from 'antd';
 import { ArrowLeftOutlined, DeleteOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
@@ -6,7 +5,6 @@ import { useCreate, useDelete, useGetIdentity, useList } from '@refinedev/core';
 import AppHeader from '../components/AppHeader';
 import SkillPicker from '../components/SkillPicker';
 import AddressEditor from '../components/AddressEditor';
-import ShareLocationConsent from '../components/ShareLocationConsent';
 import { useCatalogs } from '../hooks/useCatalogs';
 import type { SkillCatalogEntry, GradeCatalogEntry } from '../config/catalog';
 
@@ -42,7 +40,6 @@ const ProfilePage = () => {
   const { result: experiences, query: experiencesQuery } = useList({ resource: 'experiences', pagination: { pageSize: 200 } });
   const { mutateAsync: createExperience, mutation: createMutation } = useCreate();
   const { mutateAsync: deleteExperience } = useDelete();
-  const [locationUri, setLocationUri] = useState<string>();
 
   const ownSkills = resolveOwnSkills(experiences.data, skills, grades);
 
@@ -110,10 +107,7 @@ const ProfilePage = () => {
           <Divider />
 
           <Title level={4}>Mon adresse</Title>
-          <div style={{ marginBottom: 16 }}>
-            <AddressEditor onLocationChange={setLocationUri} />
-          </div>
-          <ShareLocationConsent locationUri={locationUri} />
+          <AddressEditor />
         </Card>
       </Content>
     </Layout>
