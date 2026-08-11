@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useList, useGetIdentity } from '@refinedev/core';
+import { authProvider } from '../providers';
 import type { SkillCatalogEntry, GradeCatalogEntry } from '../config/catalog';
 
 // Full IRIs for our custom pair# terms: the profile/experience resources come straight from the
@@ -38,9 +39,13 @@ const asLiteral = (value: unknown): string | undefined => {
   return undefined;
 };
 
-const fetchPublicResource = async (uri: string): Promise<Record<string, any> | undefined> => {
+/** `token` is only needed for the connected user's own resources (e.g. their address before
+ * they've shared it with contacts) — anyone else's is fetched publicly, same as skills. */
+const fetchResource = async (uri: string, token?: string): Promise<Record<string, any> | undefined> => {
   try {
-    const response = await fetch(uri, { headers: { Accept: 'application/ld+json' } });
+    const headers: Record<string, string> = { Accept: 'application/ld+json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const response = await fetch(uri, { headers });
     if (!response.ok) return undefined;
     const body = await response.json();
     return Array.isArray(body) ? body[0] : body;
@@ -101,6 +106,13 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
           profiles.map(async (profile: any): Promise<NetworkMember | undefined> => {
             const profileUri = profile.id;
             const webId = asId(profile['describes']) || profileUri;
+            const isSelf = webId === identity?.id;
+            // Our own resources may not be public yet (e.g. address shared but not yet
+            // confirmed) — read those authenticated, so we always see ourselves regardless of
+            // sharing status. Anyone else's must be public (the whole point of the "share with
+            // contacts" step), so read those anonymously, same as the real audience would.
+            const token = isSelf ? authProvider.getSession()?.token : undefined;
+
             const name =
               asLiteral(profile['vcard:given-name']) ||
               asLiteral(profile['vcard:fn']) ||
@@ -111,7 +123,7 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
             const experienceUris = asArray(firstOf(profile, PAIR_HAS_EXPERIENCE)).map(asId).filter(Boolean) as string[];
             const experiences = await Promise.all(
               experienceUris.map(async (uri): Promise<NetworkSkill | undefined> => {
-                const resource = await fetchPublicResource(uri);
+                const resource = await fetchResource(uri, token);
                 if (!resource) return undefined;
                 const skillId = asId(firstOf(resource, PAIR_EXPERIENCE_SKILL));
                 const gradeId = asId(firstOf(resource, PAIR_EXPERIENCE_GRADE));
@@ -130,27 +142,31 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
             );
             const skills = experiences.filter((skill): skill is NetworkSkill => Boolean(skill));
 
-            // Position: the Pod provider copies vcard:hasGeo onto the Profile itself when the
-            // address is saved (see @activitypods pod-provider's services/profiles/profile.ts,
-            // `before.put` hook) — it's NOT on the Location resource. Since it's embedded right
-            // on the profile we already fetched, no extra request (and no dependency on the
-            // separate "share my address" step) is needed to read it.
+            // Position: vcard:hasGeo is written by us (AddressEditor) directly onto the Location
+            // resource, nested two levels deep — Location --vcard:hasAddress--> (address blank
+            // node) --vcard:hasGeo--> {latitude, longitude}. It is NOT copied onto the profile
+            // unless the native pod-provider's own profile-edit form (a full PUT) is used — ours
+            // goes through a Solid PATCH instead (see AddressEditor), which doesn't trigger that.
             let lat: number | undefined;
             let lng: number | undefined;
-            const geo = profile['vcard:hasGeo'];
-            if (geo) {
-              lat = Number(asLiteral(geo['vcard:latitude']));
-              lng = Number(asLiteral(geo['vcard:longitude']));
-              if (Number.isNaN(lat) || Number.isNaN(lng)) {
-                lat = undefined;
-                lng = undefined;
+            const addressUri = asId(profile['vcard:hasAddress']);
+            if (addressUri) {
+              const location = await fetchResource(addressUri, token);
+              const geo = location?.['vcard:hasAddress']?.['vcard:hasGeo'];
+              if (geo) {
+                lat = Number(asLiteral(geo['vcard:latitude']));
+                lng = Number(asLiteral(geo['vcard:longitude']));
+                if (Number.isNaN(lat) || Number.isNaN(lng)) {
+                  lat = undefined;
+                  lng = undefined;
+                }
               }
             }
 
             // Skip contacts who haven't declared any skill yet — nothing to show on the map.
             if (skills.length === 0) return undefined;
 
-            return { webId, isSelf: webId === identity?.id, name, photo, lat, lng, skills };
+            return { webId, isSelf, name, photo, lat, lng, skills };
           })
         );
 

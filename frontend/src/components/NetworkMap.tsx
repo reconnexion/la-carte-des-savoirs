@@ -1,4 +1,6 @@
+import { useEffect, useRef } from 'react';
 import Map, { Marker } from 'react-map-gl';
+import type { MapRef } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
@@ -17,6 +19,20 @@ const FRANCE_VIEW = { longitude: 2.4, latitude: 46.6, zoom: 5.2 };
 
 const NetworkMap = ({ members, selectedWebId, onSelect }: Props) => {
   const located = members.filter(member => member.lat !== undefined && member.lng !== undefined);
+  const mapRef = useRef<MapRef>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // mapbox-gl measures its container once at creation; if that container's final size isn't
+  // settled yet at that exact moment (very plausible here, behind an antd Layout/Sider that's
+  // still resolving its own flex/height), the canvas locks in too small and never grows on its
+  // own. A ResizeObserver on the wrapping div catches that (and any later resize, e.g. the
+  // sidebar collapsing) and tells the map to re-measure.
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(() => mapRef.current?.resize());
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   if (!MAPBOX_ACCESS_TOKEN) {
     return (
@@ -27,31 +43,34 @@ const NetworkMap = ({ members, selectedWebId, onSelect }: Props) => {
   }
 
   return (
-    <Map
-      mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
-      initialViewState={FRANCE_VIEW}
-      style={{ width: '100%', height: '100%' }}
-      mapStyle="mapbox://styles/mapbox/streets-v12"
-    >
-      {located.map(member => (
-        <Marker
-          key={member.webId}
-          longitude={member.lng!}
-          latitude={member.lat!}
-          onClick={() => onSelect(member)}
-        >
-          <Avatar
-            src={member.photo}
-            icon={!member.photo && <UserOutlined />}
-            style={{
-              border: `2px solid ${selectedWebId === member.webId ? '#1677ff' : '#fff'}`,
-              boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-              cursor: 'pointer'
-            }}
-          />
-        </Marker>
-      ))}
-    </Map>
+    <div ref={containerRef} style={{ width: '100%', height: '100%' }}>
+      <Map
+        ref={mapRef}
+        mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
+        initialViewState={FRANCE_VIEW}
+        style={{ width: '100%', height: '100%' }}
+        mapStyle="mapbox://styles/mapbox/streets-v12"
+      >
+        {located.map(member => (
+          <Marker
+            key={member.webId}
+            longitude={member.lng!}
+            latitude={member.lat!}
+            onClick={() => onSelect(member)}
+          >
+            <Avatar
+              src={member.photo}
+              icon={!member.photo && <UserOutlined />}
+              style={{
+                border: `2px solid ${selectedWebId === member.webId ? '#1677ff' : '#fff'}`,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+                cursor: 'pointer'
+              }}
+            />
+          </Marker>
+        ))}
+      </Map>
+    </div>
   );
 };
 
