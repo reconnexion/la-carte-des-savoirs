@@ -4,11 +4,14 @@ const { PodResourcesHandlerMixin } = require('@activitypods/app');
 const CONFIG = require('../config/config');
 
 // Full IRIs: pair:ExperienceAssociation / pair:experienceSkill / pair:experienceGrade /
-// pair:hasExperience live under the pair/ (slash) sub-namespace, not pair# (see the note in
-// core.service.js). AS_URL is the ActivityStreams `url` property, used by the pod-provider to
-// link a WebID to its (private) profile resource — see @activitypods pod-provider's
-// `services/profiles/profile.ts`, `auth.registered` handler.
-const PAIR_HAS_EXPERIENCE = 'http://virtual-assembly.org/ontologies/pair/hasExperience';
+// pair:hasExperience are published under pair# here (not the upstream ontology's own pair/
+// sub-namespace) — see the note in activitypods-shapes' ExperienceAssociation shape/shapetree
+// for why (pair/ isn't registered anywhere the Pod provider can resolve it, which made app
+// registration fail with "Could not register ontology for resource type ..."). AS_URL is the
+// ActivityStreams `url` property, used by the pod-provider to link a WebID to its (private)
+// profile resource — see @activitypods pod-provider's `services/profiles/profile.ts`,
+// `auth.registered` handler.
+const PAIR_HAS_EXPERIENCE = 'http://virtual-assembly.org/ontologies/pair#hasExperience';
 const AS_URL_KEYS = ['https://www.w3.org/ns/activitystreams#url', 'as:url', 'url'];
 
 module.exports = {

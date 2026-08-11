@@ -20,10 +20,7 @@ module.exports = {
   methods: {
     transform(data) {
       return {
-        // Full IRI: pair:Grade lives under the pair/ (slash) sub-namespace, unlike pair:Skill
-        // which is under pair# — the "pair" prefix registered in core.service.js is bound to
-        // pair#, so a bare "pair:Grade" CURIE would resolve to the wrong URI here.
-        '@type': 'http://virtual-assembly.org/ontologies/pair/Grade',
+        '@type': 'pair:Grade',
         'rdfs:label': data.label,
         'schema:position': data.position
       };

@@ -2,13 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { useList, useGetIdentity } from '@refinedev/core';
 import type { SkillCatalogEntry, GradeCatalogEntry } from '../config/catalog';
 
-// Full IRIs for our custom pair/ (slash sub-namespace) terms: the profile/experience resources
-// come straight from the Pod provider's own JSON-LD serialization, which has no reason to know
-// about our "pair" CURIE prefix, so these predicates are very likely to come back as full IRIs
-// rather than compacted. We check both forms defensively.
-const PAIR_HAS_EXPERIENCE = ['http://virtual-assembly.org/ontologies/pair/hasExperience', 'pair:hasExperience'];
-const PAIR_EXPERIENCE_SKILL = ['http://virtual-assembly.org/ontologies/pair/experienceSkill', 'pair:experienceSkill'];
-const PAIR_EXPERIENCE_GRADE = ['http://virtual-assembly.org/ontologies/pair/experienceGrade', 'pair:experienceGrade'];
+// Full IRIs for our custom pair# terms: the profile/experience resources come straight from the
+// Pod provider's own JSON-LD serialization, which has no reason to know about our "pair" CURIE
+// prefix, so these predicates are very likely to come back as full IRIs rather than compacted.
+// We check both forms defensively.
+const PAIR_HAS_EXPERIENCE = ['http://virtual-assembly.org/ontologies/pair#hasExperience', 'pair:hasExperience'];
+const PAIR_EXPERIENCE_SKILL = ['http://virtual-assembly.org/ontologies/pair#experienceSkill', 'pair:experienceSkill'];
+const PAIR_EXPERIENCE_GRADE = ['http://virtual-assembly.org/ontologies/pair#experienceGrade', 'pair:experienceGrade'];
 const AS_SUMMARY = ['https://www.w3.org/ns/activitystreams#summary', 'as:summary', 'summary'];
 
 const firstOf = (record: Record<string, any> | undefined, keys: string[]): any => {

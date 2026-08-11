@@ -7,9 +7,7 @@ module.exports = {
   mixins: [ControlledContainerMixin],
   settings: {
     path: '/pair/grade',
-    // Full IRI: pair:Grade lives under the pair/ (slash) sub-namespace, not pair# (see note in
-    // importers/grades-catalog-importer.service.js).
-    acceptedTypes: ['http://virtual-assembly.org/ontologies/pair/Grade'],
+    acceptedTypes: ['pair:Grade'],
     permissions: {
       anon: {
         read: true

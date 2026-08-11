@@ -60,8 +60,8 @@ const AddSkillsStep = ({
         await createExperience({
           resource: 'experiences',
           values: {
-            'http://virtual-assembly.org/ontologies/pair/experienceSkill': { '@id': skill.skillId },
-            'http://virtual-assembly.org/ontologies/pair/experienceGrade': { '@id': skill.gradeId },
+            'http://virtual-assembly.org/ontologies/pair#experienceSkill': { '@id': skill.skillId },
+            'http://virtual-assembly.org/ontologies/pair#experienceGrade': { '@id': skill.gradeId },
             ...(skill.summary ? { 'https://www.w3.org/ns/activitystreams#summary': skill.summary } : {})
           }
         });
