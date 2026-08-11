@@ -25,11 +25,13 @@ const MapPage = () => {
   const [selectedSkillId, setSelectedSkillId] = useState<string>();
   const [selectedMember, setSelectedMember] = useState<NetworkMember>();
 
+  const hasOwnExperiences = (ownExperiences?.data?.length ?? 0) > 0;
+
   useEffect(() => {
-    if (!ownExperiencesLoading && (ownExperiences?.data?.length ?? 0) === 0) {
+    if (!ownExperiencesLoading && !hasOwnExperiences) {
       navigate('/onboarding');
     }
-  }, [ownExperiencesLoading, ownExperiences, navigate]);
+  }, [ownExperiencesLoading, hasOwnExperiences, navigate]);
 
   // A selected node can be a precise skill (match its id directly) or a category (match any of
   // its children skills).
@@ -39,6 +41,16 @@ const MapPage = () => {
   const visibleMembers = matchingSkillIds
     ? members.filter(member => member.skills.some(skill => matchingSkillIds.has(skill.skillId)))
     : members;
+
+  // Don't mount the map (and load Mapbox) until we actually know there's something to show —
+  // otherwise it briefly loads on every visit that's about to redirect to /onboarding.
+  if (ownExperiencesLoading || !hasOwnExperiences) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <Layout style={{ height: '100vh' }}>
