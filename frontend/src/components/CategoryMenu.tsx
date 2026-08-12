@@ -1,44 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Menu, Layout, Button } from 'antd';
-import {
-  AppstoreOutlined,
-  CoffeeOutlined,
-  SunOutlined,
-  ToolOutlined,
-  LaptopOutlined,
-  MedicineBoxOutlined,
-  BulbOutlined,
-  HomeOutlined,
-  CarOutlined,
-  ReadOutlined,
-  BankOutlined,
-  TeamOutlined,
-  SmileOutlined,
-  TagOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined
-} from '@ant-design/icons';
+import { AppstoreOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import type { SkillCatalogEntry } from '../config/catalog';
 import { buildSkillsTree } from '../config/catalog';
+import { getCategoryIcon } from '../config/categoryIcons';
 
 const { Sider } = Layout;
-
-// Keyed by category label rather than id: ids are backend-generated slugs, labels are the
-// stable, human-authored part of skills-catalog-fr.json.
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  'Alimentation et cuisine': <CoffeeOutlined />,
-  'Jardinage et nature': <SunOutlined />,
-  'Bricolage et fabrication': <ToolOutlined />,
-  'Numérique et informatique': <LaptopOutlined />,
-  'Bien-être et santé': <MedicineBoxOutlined />,
-  'Arts et créativité': <BulbOutlined />,
-  'Savoirs de la maison': <HomeOutlined />,
-  'Mobilité et mécanique': <CarOutlined />,
-  'Éducation et langues': <ReadOutlined />,
-  'Administratif et juridique': <BankOutlined />,
-  'Communication et organisation': <TeamOutlined />,
-  'Savoir-être et entraide': <SmileOutlined />
-};
 
 const ALL_KEY = '__all__';
 
@@ -58,7 +25,7 @@ const CategoryMenu = ({ skills, selectedSkillId, onSelect }: Props) => {
     { key: ALL_KEY, icon: <AppstoreOutlined />, label: 'Toutes les compétences' },
     ...tree.map(category => ({
       key: category.id,
-      icon: CATEGORY_ICONS[category.label] ?? <TagOutlined />,
+      icon: getCategoryIcon(category.label),
       label: category.label,
       children: category.children.map(skill => ({ key: skill.id, label: skill.label }))
     }))
@@ -73,23 +40,34 @@ const CategoryMenu = ({ skills, selectedSkillId, onSelect }: Props) => {
       onCollapse={setCollapsed}
       breakpoint="lg"
       trigger={null}
-      style={{ borderRight: '1px solid #f0f0f0', overflow: 'auto' }}
+      style={{ borderRight: '1px solid #f0f0f0', overflow: 'visible', position: 'relative' }}
     >
-      <div style={{ display: 'flex', justifyContent: collapsed ? 'center' : 'flex-end', padding: 8 }}>
-        <Button
-          type="text"
-          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          onClick={() => setCollapsed(!collapsed)}
+      <div style={{ height: '100%', overflow: 'auto' }}>
+        <Menu
+          mode="inline"
+          style={{ borderRight: 0 }}
+          selectedKeys={[selectedSkillId ?? ALL_KEY]}
+          openKeys={openKeys}
+          onOpenChange={setOpenKeys}
+          onClick={({ key }) => onSelect(key === ALL_KEY ? undefined : key)}
+          items={items}
         />
       </div>
-      <Menu
-        mode="inline"
-        style={{ borderRight: 0 }}
-        selectedKeys={[selectedSkillId ?? ALL_KEY]}
-        openKeys={openKeys}
-        onOpenChange={setOpenKeys}
-        onClick={({ key }) => onSelect(key === ALL_KEY ? undefined : key)}
-        items={items}
+      {/* Floats on the sider's own edge, half-overlapping the content area — a common pattern
+          (VSCode, Notion...) that reads more like a natural "handle" than a toolbar button. */}
+      <Button
+        shape="circle"
+        size="small"
+        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        onClick={() => setCollapsed(!collapsed)}
+        style={{
+          position: 'absolute',
+          top: 20,
+          right: -13,
+          zIndex: 10,
+          background: '#fff',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.25)'
+        }}
       />
     </Sider>
   );

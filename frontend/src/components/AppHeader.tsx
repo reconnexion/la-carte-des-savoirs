@@ -7,8 +7,6 @@ import Logo from './Logo';
 const { Header } = Layout;
 const { Title } = Typography;
 
-const BRAND_BLUE = '#1677ff';
-
 const AppHeader = () => {
   const { data: identity } = useGetIdentity<{ id: string; name?: string; avatar?: string }>();
   const { mutate: logout } = useLogout();
@@ -21,13 +19,13 @@ const AppHeader = () => {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 24px',
-        background: BRAND_BLUE,
+        background: 'linear-gradient(90deg, #1677ff 0%, #4096ff 100%)',
         boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
       }}
     >
-      <Space align="center" size={12}>
+      <Space align="center" size={12} style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>
         <Logo size={30} />
-        <Title level={4} style={{ margin: 0, color: '#fff' }}>
+        <Title level={4} style={{ margin: 0, color: '#fff', fontFamily: "'Fredoka', sans-serif", fontWeight: 600 }}>
           {import.meta.env.VITE_APP_NAME}
         </Title>
       </Space>
