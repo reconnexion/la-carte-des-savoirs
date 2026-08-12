@@ -32,8 +32,12 @@ const asId = (value: unknown): string | undefined => {
 };
 
 const asLiteral = (value: unknown): string | undefined => {
-  if (!value) return undefined;
+  if (value === undefined || value === null) return undefined;
   if (typeof value === 'string') return value;
+  // Numeric/boolean literals (e.g. schema:position) compact to plain JS values in JSON-LD
+  // when the context gives them a @type coercion — not the verbose {"@value": ...} form,
+  // which only shows up for language-tagged or non-coerced literals.
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   if (Array.isArray(value)) return asLiteral(value[0]);
   if (typeof value === 'object') return (value as any)['@value'];
   return undefined;

@@ -102,12 +102,14 @@ Mapbox...).
   retrouver — voir `backend/services/experience.service.js`.
 - `vcard:Location` : l'adresse du domicile, ajoutée/modifiée directement dans l'app (voir
   `frontend/src/components/AddressEditor.tsx`) — visible aussi depuis le gestionnaire de
-  porte-données. Contrairement aux compétences, cette ressource reste **privée** : seule une
-  position approximative (légèrement décalée aléatoirement, voir `JITTER_DEGREES` dans
-  `backend/services/location.service.js`) est recopiée sur le profil de l'utilisateur — déjà
-  visible nativement par ses contacts, sans action de partage supplémentaire. L'adresse exacte
-  n'est donc jamais exposée par l'application. Le consentement est demandé une seule fois, avant
-  la première saisie.
+  porte-données. Contrairement aux compétences, cette ressource reste **privée** (ses détails —
+  rue, code postal... — ne sont jamais exposés par l'application) : seule sa position géographique
+  (`vcard:hasGeo`) est recopiée sur le profil de l'utilisateur, déjà visible nativement par ses
+  contacts, sans action de partage supplémentaire. Cette recopie est gérée nativement par le pod
+  provider lui-même (hook `before.put` sur le profil, voir `pod-provider/backend/services/profiles/
+  profile.ts` dans le dépôt ActivityPods) dès que le profil est mis à jour (PUT) avec
+  `vcard:hasAddress` renseigné — l'app n'a donc aucun code spécifique à écrire pour ça. Le
+  consentement est demandé une seule fois, avant la première saisie.
 
 Les recommandations entre pairs ne sont pas encore implémentées dans cette version.
 

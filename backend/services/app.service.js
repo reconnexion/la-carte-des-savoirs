@@ -37,12 +37,23 @@ module.exports = {
         },
         {
           // Read/create/update the user's home address (added or edited directly from
-          // onboarding/profile, see AddressEditor). The Location resource itself stays private —
-          // only its (jittered) lat/lng gets copied onto the profile, see location.service.js —
-          // so no acl:Control needed here, unlike the other two access needs above.
+          // onboarding/profile, see AddressEditor). The Location resource itself stays private, and
+          // vcard:hasGeo is computed and copied onto the profile natively by the Pod provider (its
+          // `before.put` hook on the profile container) as soon as the profile is PUT with
+          // vcard:hasAddress set — no acl:Control needed here, no app-side code required at all.
+          // (Location is a container flagged `excludeFromMirror` on the Pod provider, so it never
+          // emits an AS2 activity — an onCreate/onUpdate-hook approach here would structurally never
+          // fire, which is why this isn't handled the same way as pair:hasExperience below.)
           shapeTreeUri: urlJoin(CONFIG.SHAPE_REPOSITORY_URL, 'shapetrees/vcard/Location'),
           accessMode: ['acl:Read', 'acl:Write']
-        }
+        },
+        // Required for PodResourcesHandlerMixin's onCreate hook to fire at all (see
+        // experience.service.js, which makes new skills publicly readable and links them from the
+        // profile): it's wired through pod-activities-watcher, which only listens to a user's
+        // outbox once the app holds this special right. Confirmed via direct triplestore
+        // inspection: without it, skill resources were created but stayed 403 forever, and
+        // pair:hasExperience was never added to the profile.
+        'apods:ReadOutbox'
       ],
       optional: []
     },

@@ -58,16 +58,11 @@ const AddressEditor = ({ onLocationChange }: Props) => {
     try {
       const addressFields = parseAddressFeature(feature);
 
+      let targetLocationUri = locationUri;
       if (locationUri) {
-        // Update the existing Location resource in place — keeps the same URI, so the profile
-        // pointer doesn't need to change (the backend's onUpdate hook re-syncs the profile's
-        // approximate position either way, see location.service.js).
-        //
-        // '@type' must be included explicitly: unlike create() (which adds it automatically from
-        // the resolved shape tree), update() does a full PUT of exactly what we send — omitting
-        // it silently strips the resource's own type declaration, which then stops matching the
-        // vcard:Location shape tree our backend listens for (confirmed by inspecting the actual
-        // triplestore: a first attempt without this left rdf:type, dc:created, dc:modified and
+        // '@type' must be included explicitly: update() does a full PUT of exactly what we send —
+        // omitting it silently strips the resource's own type declaration (confirmed by inspecting
+        // the triplestore: a first attempt without this left rdf:type, dc:created, dc:modified and
         // dc:creator all wiped from the resource).
         await updateLocation({
           resource: 'location',
@@ -79,19 +74,29 @@ const AddressEditor = ({ onLocationChange }: Props) => {
           resource: 'location',
           values: { 'vcard:given-name': 'Domicile', 'vcard:hasAddress': addressFields }
         });
+        targetLocationUri = (newLocation as any).id;
+      }
 
-        // A PUT here would need to resend the whole profile (the data provider's update() fully
-        // overwrites), which turned out to 422 — some field on the fetched profile doesn't
-        // round-trip cleanly. A Solid PATCH (SPARQL Update) only touches the one triple we
-        // actually want to add, so it's both safer and simpler.
+      // A real PUT of the profile (not a PATCH) is required here: the Pod provider's own
+      // `before.put` hook on the profile container (pod-provider/backend/services/profiles/
+      // profile.ts) is what actually computes vcard:hasGeo from the linked Location's address —
+      // synchronously, no activity/webhook involved. vcard:Location itself is a container flagged
+      // `excludeFromMirror` on the Pod provider, so it never emits an AS2 activity at all: a
+      // PATCH-based / onCreate-hook approach (what this used to do, see location.service.js's
+      // git history) can structurally never observe a Location change, no matter what access the
+      // app is granted. We fetch the profile's own current raw document right before PUTting it
+      // back (rather than reusing the Refine-normalized `profile` object, whose reshaped `id` key
+      // and dropped `@context` caused an 422 the first time this was tried) so nothing else on the
+      // profile is lost in the round-trip.
+      if (targetLocationUri && profile) {
         const session = authProvider.getSession();
         if (!session) throw new Error('Not authenticated');
+        const { json: rawProfile } = await fetchJson((profile as any).id, {}, session.token);
         await fetchJson(
           (profile as any).id,
           {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/sparql-update' },
-            body: `PREFIX vcard: <http://www.w3.org/2006/vcard/ns#>\nINSERT DATA { <${(profile as any).id}> vcard:hasAddress <${(newLocation as any).id}> . }`
+            method: 'PUT',
+            body: JSON.stringify({ ...rawProfile, 'vcard:hasAddress': targetLocationUri })
           },
           session.token
         );
@@ -123,7 +128,7 @@ const AddressEditor = ({ onLocationChange }: Props) => {
         <div style={{ marginTop: 4 }}>
           <Space size={4}>
             <CheckCircleFilled style={{ color: '#52c41a' }} />
-            <Text type="secondary">Votre position approximative est visible par vos contacts.</Text>
+            <Text type="secondary">Votre position est visible par vos contacts.</Text>
           </Space>
         </div>
       </div>
@@ -136,9 +141,8 @@ const AddressEditor = ({ onLocationChange }: Props) => {
     <div>
       {!locationUri && (
         <Paragraph type="secondary" style={{ marginBottom: 8 }}>
-          Votre adresse exacte n'est jamais partagée. Seule une position approximative (à quelques centaines de
-          mètres près) sera visible par vos contacts actuels, et par tout nouveau contact que vous ajouterez par la
-          suite.
+          Les détails de votre adresse (rue, code postal...) ne sont jamais partagés. Seule sa position sur la carte
+          sera visible par vos contacts actuels, et par tout nouveau contact que vous ajouterez par la suite.
         </Paragraph>
       )}
       {locationUri || consent ? (
@@ -153,7 +157,7 @@ const AddressEditor = ({ onLocationChange }: Props) => {
         </Space>
       ) : (
         <Checkbox checked={consent} onChange={event => setConsent(event.target.checked)}>
-          J'accepte que ma position approximative soit visible par mes contacts
+          J'accepte que ma position soit visible par mes contacts
         </Checkbox>
       )}
       {error && (

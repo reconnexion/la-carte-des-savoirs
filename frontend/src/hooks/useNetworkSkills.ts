@@ -33,8 +33,12 @@ const asId = (value: unknown): string | undefined => {
 };
 
 const asLiteral = (value: unknown): string | undefined => {
-  if (!value) return undefined;
+  if (value === undefined || value === null) return undefined;
   if (typeof value === 'string') return value;
+  // Numeric/boolean literals (e.g. vcard:latitude, schema:position) compact to plain JS
+  // values in JSON-LD when the context gives them a @type coercion — not the verbose
+  // {"@value": ...} form, which only shows up for language-tagged or non-coerced literals.
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   if (typeof value === 'object') return (value as any)['@value'];
   return undefined;
 };
@@ -58,6 +62,7 @@ export type NetworkSkill = {
   uri: string;
   skillId: string;
   skillLabel: string;
+  categoryLabel?: string;
   gradeLabel: string;
   gradePosition: number;
   summary?: string;
@@ -130,10 +135,12 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
                 const skill = skillId ? skillsById.get(skillId) : undefined;
                 const grade = gradeId ? gradesById.get(gradeId) : undefined;
                 if (!skill || !grade) return undefined;
+                const category = skill.parentId ? skillsById.get(skill.parentId) : undefined;
                 return {
                   uri,
                   skillId: skill.id,
                   skillLabel: skill.label,
+                  categoryLabel: category?.label,
                   gradeLabel: grade.label,
                   gradePosition: grade.position,
                   summary: asLiteral(firstOf(resource, AS_SUMMARY))
@@ -142,11 +149,12 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
             );
             const skills = experiences.filter((skill): skill is NetworkSkill => Boolean(skill));
 
-            // Position: backend/services/location.service.js copies a (deliberately jittered)
-            // lat/lng straight onto the profile whenever the user creates/edits their Location —
-            // already right here in the same profile record we fetched for name/photo/skills, no
-            // extra request needed. The Location resource itself stays private; this app never
-            // reads it directly.
+            // Position: the Pod provider itself copies the linked Location's exact lat/lng onto the
+            // profile whenever it's PUT with vcard:hasAddress set (see AddressEditor.tsx) — already
+            // right here in the same profile record we fetched for name/photo/skills, no extra
+            // request needed. The Location resource itself stays private; this app never reads it
+            // directly. Note this is the *exact* geocoded position, not a jittered approximation —
+            // see the README/AddressEditor for the current state of that tradeoff.
             let lat: number | undefined;
             let lng: number | undefined;
             const geo = profile['vcard:hasGeo'];

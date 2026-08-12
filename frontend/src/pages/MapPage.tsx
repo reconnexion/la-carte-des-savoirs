@@ -20,7 +20,16 @@ const MapPage = () => {
     resource: 'experiences',
     pagination: { pageSize: 1 }
   });
-  const ownExperiencesLoading = ownExperiencesQuery.isLoading;
+  // `isLoading` only reflects the very first fetch ever made for this query key. Right after
+  // onboarding creates the user's first skill and navigates back here, this same query already
+  // has a *cached* (empty) result from the very first time this user ever landed on this page —
+  // before onboarding, when they genuinely had none yet — so React Query serves that stale empty
+  // list immediately (isLoading: false) while silently revalidating in the background
+  // (fetchStatus: "fetching"). Gating on isLoading alone reacted to that stale snapshot and
+  // redirected back to /onboarding even though the skill really had been created. Waiting for
+  // fetchStatus to settle too fixes it — confirmed via a debug log showing exactly this
+  // (status: "success", data: [], fetchStatus: "fetching" right after finishing onboarding).
+  const ownExperiencesSettled = ownExperiencesQuery.fetchStatus !== 'fetching';
 
   const [selectedSkillId, setSelectedSkillId] = useState<string>();
   const [selectedMember, setSelectedMember] = useState<NetworkMember>();
@@ -28,10 +37,10 @@ const MapPage = () => {
   const hasOwnExperiences = (ownExperiences?.data?.length ?? 0) > 0;
 
   useEffect(() => {
-    if (!ownExperiencesLoading && !hasOwnExperiences) {
+    if (ownExperiencesSettled && !hasOwnExperiences) {
       navigate('/onboarding');
     }
-  }, [ownExperiencesLoading, hasOwnExperiences, navigate]);
+  }, [ownExperiencesSettled, hasOwnExperiences, navigate]);
 
   // A selected node can be a precise skill (match its id directly) or a category (match any of
   // its children skills).
@@ -44,7 +53,7 @@ const MapPage = () => {
 
   // Don't mount the map (and load Mapbox) until we actually know there's something to show —
   // otherwise it briefly loads on every visit that's about to redirect to /onboarding.
-  if (ownExperiencesLoading || !hasOwnExperiences) {
+  if (!ownExperiencesSettled || !hasOwnExperiences) {
     return (
       <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Spin size="large" />
