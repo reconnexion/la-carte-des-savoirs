@@ -7,7 +7,12 @@ import Logo from './Logo';
 const { Header } = Layout;
 const { Title } = Typography;
 
-const AppHeader = () => {
+type Props = {
+  onOpenProfile: () => void;
+  isMobile: boolean;
+};
+
+const AppHeader = ({ onOpenProfile, isMobile }: Props) => {
   const { data: identity } = useGetIdentity<{ id: string; name?: string; avatar?: string }>();
   const { mutate: logout } = useLogout();
   const navigate = useNavigate();
@@ -37,7 +42,7 @@ const AppHeader = () => {
               key: 'profile',
               icon: <IdcardOutlined />,
               label: 'Mon profil',
-              onClick: () => navigate('/profile')
+              onClick: onOpenProfile
             },
             {
               key: 'logout',
@@ -50,7 +55,7 @@ const AppHeader = () => {
       >
         <Space style={{ cursor: 'pointer', color: '#fff' }}>
           <Avatar src={identity?.avatar} icon={!identity?.avatar && <UserOutlined />} />
-          <span>{identity?.name}</span>
+          {!isMobile && <span>{identity?.name}</span>}
         </Space>
       </Dropdown>
     </Header>

@@ -1,20 +1,19 @@
 import { Refine, Authenticated } from '@refinedev/core';
 import { useNotificationProvider, ThemedLayout, ErrorComponent, RefineThemes } from '@refinedev/antd';
-import routerProvider, { CatchAllNavigate, UnsavedChangesNotifier, DocumentTitleHandler } from '@refinedev/react-router';
+import routerProvider, { CatchAllNavigate, UnsavedChangesNotifier } from '@refinedev/react-router';
 import { AntdAuthPage } from '@activitypods/refine-providers/antd-auth-page';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router';
 import { App as AntdApp, ConfigProvider } from 'antd';
+import frFR from 'antd/locale/fr_FR';
 
 import '@refinedev/antd/dist/reset.css';
 
 import { authProvider, dataProvider, DEFAULT_POD_PROVIDER } from './providers';
 import MapPage from './pages/MapPage';
-import OnboardingPage from './pages/OnboardingPage';
-import ProfilePage from './pages/ProfilePage';
 
 const App = () => (
   <BrowserRouter>
-    <ConfigProvider theme={{ ...RefineThemes.Blue, token: { ...RefineThemes.Blue.token, colorPrimary: '#1677ff' } }}>
+    <ConfigProvider locale={frFR} theme={{ ...RefineThemes.Blue, token: { ...RefineThemes.Blue.token, colorPrimary: '#1677ff' } }}>
       <AntdApp>
         <Refine
           authProvider={authProvider}
@@ -41,8 +40,11 @@ const App = () => (
               }
             >
               <Route index element={<MapPage />} />
-              <Route path="/onboarding" element={<OnboardingPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
+              {/* Deep link from notification emails (see endorsement.service.js) — same
+                  @user@host acct handle convention as the ActivityPods Pod provider frontend's
+                  own /network/:webfingerId route. Renders the exact same MapPage; it just also
+                  opens the matching member's panel once resolved (see MapPage.tsx). */}
+              <Route path="/user/:handle" element={<MapPage />} />
             </Route>
 
             {/*
@@ -65,7 +67,6 @@ const App = () => (
             </Route>
           </Routes>
           <UnsavedChangesNotifier />
-          <DocumentTitleHandler />
         </Refine>
       </AntdApp>
     </ConfigProvider>
