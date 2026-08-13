@@ -10,7 +10,7 @@ module.exports = {
     app: {
       name: CONFIG.APP_NAME,
       description: CONFIG.APP_DESCRIPTION,
-      thumbnail: urlJoin(CONFIG.FRONT_URL, 'logo192.png'),
+      thumbnail: urlJoin(CONFIG.FRONT_URL, 'favicon.svg'),
       frontUrl: CONFIG.FRONT_URL,
       supportedLocales: CONFIG.APP_LANG
     },
@@ -53,7 +53,41 @@ module.exports = {
         // outbox once the app holds this special right. Confirmed via direct triplestore
         // inspection: without it, skill resources were created but stayed 403 forever, and
         // pair:hasExperience was never added to the profile.
-        'apods:ReadOutbox'
+        'apods:ReadOutbox',
+        // Recommendations (see endorsement.service.js): ReadInbox lets our backend watch the
+        // *recommended person's* inbox for an apods:Endorse activity landing in it, so it can link
+        // it from their ExperienceAssociation and trigger a notification. PostOutbox turned out to
+        // still be required even though EndorseDialog.tsx posts using the sender's own Solid-OIDC
+        // session, not an explicit app-signed proxy call: activitypub.outbox.post's own "is this
+        // the pod owner posting to their own outbox" bypass didn't take effect for this request in
+        // practice (confirmed live: removing PostOutbox produced a bare 403 on that POST, logged
+        // with no further detail — consistent with AppControlMiddleware's
+        // apods:PostOutbox-required branch, though the exact reason ctx.meta.webId didn't match
+        // podOwner here isn't fully understood yet).
+        'apods:ReadInbox',
+        'apods:PostOutbox',
+        {
+          // acl:Read is needed for our backend's own dereferencing of an Endorse activity (via
+          // pod-activities-watcher, proxied through the app) to be let through
+          // AppControlMiddleware's type allow-list — without this, that proxied GET 403s even
+          // though the activity's actual ACL (set automatically by the Pod provider's own
+          // setRightsHandler, matching the activity's to/cc) is already correct. Confirmed live.
+          // acl:Write is kept too in case the send path ends up going through
+          // AppControlMiddleware's app-acting-on-behalf-of-user branch after all (see the
+          // apods:PostOutbox note above) — harmless if unused.
+          shapeTreeUri: urlJoin(CONFIG.SHAPE_REPOSITORY_URL, 'shapetrees/apods/Endorse'),
+          accessMode: ['acl:Read', 'acl:Write']
+        },
+        {
+          // "Contacter" button (see ContactDialog.tsx): sends a plain as:Note, which
+          // activitypub.object.wrap auto-wraps into a Create — the Pod provider's own native
+          // contacts.message service (not anything of ours) then handles adding the recipient to
+          // the sender's contacts WebACL group and emailing them, exactly like the messaging
+          // already built into the Pod provider frontend/Arena. No app-specific backend service
+          // needed for this at all.
+          shapeTreeUri: urlJoin(CONFIG.SHAPE_REPOSITORY_URL, 'shapetrees/as/Note'),
+          accessMode: ['acl:Read', 'acl:Write']
+        }
       ],
       optional: []
     },
