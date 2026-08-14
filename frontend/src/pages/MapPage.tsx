@@ -164,11 +164,19 @@ const MapPage = () => {
           <div style={{ position: 'relative', flex: 1 }}>
             {isMobile && (
               <Button
-                shape="circle"
                 icon={<FilterOutlined />}
                 onClick={() => setFiltersOpen(true)}
-                style={{ position: 'absolute', top: 12, left: 12, zIndex: 1, boxShadow: '0 1px 4px rgba(0,0,0,0.25)' }}
-              />
+                style={{
+                  position: 'absolute',
+                  top: 12,
+                  left: 12,
+                  zIndex: 1,
+                  background: '#fff',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.25)'
+                }}
+              >
+                Filtres
+              </Button>
             )}
             {!hasLoadedOnce && (catalogsLoading || membersLoading) && (
               <div

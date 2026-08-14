@@ -59,7 +59,7 @@ const MemberPanel = ({ member, onClose, isMobile }: Props) => {
           // in CategoryMenu) — keeps the panels visually consistent instead of introducing a
           // separate, heavier blue gradient just for this one.
           background: '#e6f4ff',
-          padding: '40px 24px 24px',
+          padding: isMobile ? '40px 16px 24px' : '40px 24px 24px',
           textAlign: 'center'
         }}
       >
@@ -91,7 +91,7 @@ const MemberPanel = ({ member, onClose, isMobile }: Props) => {
         )}
       </div>
 
-      <div style={{ padding: '20px 24px' }}>
+      <div style={{ padding: isMobile ? '20px 16px' : '20px 24px' }}>
         <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
           {member.skills.length} compétence{member.skills.length > 1 ? 's' : ''}
         </Text>
