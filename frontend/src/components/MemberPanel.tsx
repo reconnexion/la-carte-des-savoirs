@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { Layout, Avatar, Typography, Button, Drawer } from 'antd';
+import { Layout, Avatar, Typography, Button, Space, Drawer } from 'antd';
 import { UserOutlined, CloseOutlined, MessageOutlined } from '@ant-design/icons';
 import { useGetIdentity } from '@refinedev/core';
 import type { NetworkMember } from '../hooks/useNetworkSkills';
+import { useOwnTipjar } from '../hooks/useOwnTipjar';
 import { authProvider } from '../providers';
 import { openAppProfileUrl } from '../config/openApp';
+import { portejunesPayUrl } from '../config/portejunes';
 import SkillCard from './SkillCard';
 import ContactDialog from './ContactDialog';
+import G1Icon from './G1Icon';
 
 const { Sider } = Layout;
 const { Title, Text } = Typography;
@@ -34,12 +37,20 @@ type Props = {
 const MemberPanel = ({ member, onClose, isMobile }: Props) => {
   const { data: identity } = useGetIdentity<{ id: string }>();
   const [contactOpen, setContactOpen] = useState(false);
+  // Only fetched/used to gate the "Envoyer des Ğ1" button below -- sending someone to PorteJunes
+  // when the connected user doesn't have a wallet of their own would just be a dead end there.
+  const { hasWallet: ownHasWallet } = useOwnTipjar();
 
   if (!member) {
     // Desktop still needs the (collapsed-to-0-width) Sider to keep the flex row's column count
     // stable; the mobile Drawer just doesn't render at all when there's nothing selected.
     return isMobile ? null : <Sider width={PANEL_WIDTH} collapsedWidth={0} collapsed trigger={null} theme="light" />;
   }
+
+  // Both sides need a wallet: the recipient obviously needs one to be paid at all, and there's no
+  // point sending the connected user to PorteJunes if they don't have one themselves either --
+  // see useOwnTipjar.ts.
+  const payUrl = !member.isSelf && member.hasWallet && ownHasWallet ? portejunesPayUrl(member.webId) : undefined;
 
   const avatar = (
     <Avatar
@@ -85,9 +96,16 @@ const MemberPanel = ({ member, onClose, isMobile }: Props) => {
           </Text>
         )}
         {!member.isSelf && (
-          <Button type="primary" size="small" icon={<MessageOutlined />} onClick={() => setContactOpen(true)} style={{ marginTop: 12 }}>
-            Contacter
-          </Button>
+          <Space direction="vertical" align="center" style={{ marginTop: 12 }}>
+            <Button type="primary" size="small" icon={<MessageOutlined />} onClick={() => setContactOpen(true)}>
+              Contacter
+            </Button>
+            {payUrl && (
+              <Button size="small" icon={<G1Icon />} href={payUrl} target="_blank" rel="noopener noreferrer">
+                Envoyer des Ğ1
+              </Button>
+            )}
+          </Space>
         )}
       </div>
 

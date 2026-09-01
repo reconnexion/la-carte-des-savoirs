@@ -13,6 +13,7 @@ const PAIR_EXPERIENCE_GRADE = ['http://virtual-assembly.org/ontologies/pair#expe
 const AS_SUMMARY = ['https://www.w3.org/ns/activitystreams#summary', 'as:summary', 'summary'];
 const APODS_RECOMMENDED_BY = ['http://activitypods.org/ns/core#recommendedBy', 'apods:recommendedBy'];
 const DC_CREATED = ['http://purl.org/dc/terms/created', 'dc:created'];
+const FOAF_TIPJAR = ['http://xmlns.com/foaf/0.1/tipjar', 'foaf:tipjar'];
 
 const firstOf = (record: Record<string, any> | undefined, keys: string[]): any => {
   if (!record) return undefined;
@@ -81,6 +82,9 @@ export type NetworkMember = {
   photo?: string;
   bio?: string;
   memberSince?: string;
+  /** Whether this member has a Ğ1 wallet linked to their WebID (`foaf:tipjar`, set by PorteJunes
+   *  on wallet creation) -- gates the "Envoyer des Ğ1" handoff button in MemberPanel. */
+  hasWallet: boolean;
   lat?: number;
   lng?: number;
   skills: NetworkSkill[];
@@ -169,6 +173,8 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
             // request here.
             const webIdDoc = await fetchResource(webId, token);
             const memberSince = webIdDoc ? asLiteral(firstOf(webIdDoc, DC_CREATED)) : undefined;
+            const tipjar = webIdDoc ? firstOf(webIdDoc, FOAF_TIPJAR) : undefined;
+            const hasWallet = Array.isArray(tipjar) ? tipjar.length > 0 : Boolean(tipjar);
 
             // Skills: resolve each pair:hasExperience link into a displayable skill.
             const experienceUris = asArray(firstOf(profile, PAIR_HAS_EXPERIENCE)).map(asId).filter(Boolean) as string[];
@@ -217,7 +223,7 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
             // Skip contacts who haven't declared any skill yet — nothing to show on the map.
             if (skills.length === 0) return undefined;
 
-            return { webId, profileUri, isSelf, name, photo, bio, memberSince, lat, lng, skills };
+            return { webId, profileUri, isSelf, name, photo, bio, memberSince, hasWallet, lat, lng, skills };
           })
         );
 
