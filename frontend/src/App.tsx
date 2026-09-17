@@ -9,6 +9,8 @@ import frFR from 'antd/locale/fr_FR';
 import '@refinedev/antd/dist/reset.css';
 
 import { authProvider, dataProvider, DEFAULT_POD_PROVIDER } from './providers';
+import { i18nProvider } from './i18n';
+import AppGuard from './components/AppGuard';
 import MapPage from './pages/MapPage';
 
 const App = () => (
@@ -19,6 +21,7 @@ const App = () => (
           authProvider={authProvider}
           dataProvider={dataProvider}
           routerProvider={routerProvider}
+          i18nProvider={i18nProvider}
           resources={[
             { name: 'experiences' },
             { name: 'profile' },
@@ -35,7 +38,9 @@ const App = () => (
             <Route
               element={
                 <Authenticated key="authenticated-routes" fallback={<CatchAllNavigate to="/login" />}>
-                  <Outlet />
+                  <AppGuard>
+                    <Outlet />
+                  </AppGuard>
                 </Authenticated>
               }
             >
@@ -57,9 +62,11 @@ const App = () => (
             <Route
               element={
                 <Authenticated key="catch-all">
-                  <ThemedLayout>
-                    <Outlet />
-                  </ThemedLayout>
+                  <AppGuard>
+                    <ThemedLayout>
+                      <Outlet />
+                    </ThemedLayout>
+                  </AppGuard>
                 </Authenticated>
               }
             >

@@ -55,6 +55,13 @@ Le shape tree `pair:ExperienceAssociation` est déployé sur
    ```bash
    cd backend && yarn install && yarn dev
    ```
+   Le backend cible un Pod provider ActivityPods **2.3** (branche `next`) : `@activitypods/app` doit
+   être en 2.3.x et `@semapps/*` en 1.2.x, les 2.2/1.1 publiés attendent encore les `interop:DataGrant`
+   que 2.3 a supprimés (sinon l'enregistrement de l'app échoue silencieusement côté backend et le
+   frontend affiche « L'application n'écoute pas … »). Pour développer sur le framework lui-même,
+   `yarn link-packages` lie `@activitypods/app` à `activitypods/app-framework/app` (`yarn link` lancé
+   là-bas au préalable) ; ce dépôt étant en TypeScript, `yarn dev` passe par `tsx`. Retour aux paquets
+   npm : `yarn unlink-packages`.
 4. Copiez `frontend/.env` en `frontend/.env.local`, renseignez `VITE_MAPBOX_ACCESS_TOKEN`, puis :
    ```bash
    cd frontend && yarn install && yarn dev
