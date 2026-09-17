@@ -13,7 +13,10 @@ export const DEFAULT_POD_PROVIDER = import.meta.env.VITE_POD_PROVIDER_BASE_URL a
 const SHAPE_REPOSITORY_URL = import.meta.env.VITE_SHAPE_REPOSITORY_URL as string;
 
 export const authProvider = apAuthProvider({
-  clientId: CLIENT_ID
+  clientId: CLIENT_ID,
+  // `AntdBackgroundChecks` (see `components/AppGuard.tsx`) already polls the app status and
+  // covers the re-consent case, no need for the auth provider's own poll on top of it.
+  appStatusCheckInterval: false
 });
 
 export const dataProvider = apDataProvider({

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useList, useGetIdentity } from '@refinedev/core';
 import { authProvider } from '../providers';
 import type { SkillCatalogEntry, GradeCatalogEntry } from '../config/catalog';
@@ -11,6 +11,9 @@ const PAIR_HAS_EXPERIENCE = ['http://virtual-assembly.org/ontologies/pair#hasExp
 const PAIR_EXPERIENCE_SKILL = ['http://virtual-assembly.org/ontologies/pair#experienceSkill', 'pair:experienceSkill'];
 const PAIR_EXPERIENCE_GRADE = ['http://virtual-assembly.org/ontologies/pair#experienceGrade', 'pair:experienceGrade'];
 const AS_SUMMARY = ['https://www.w3.org/ns/activitystreams#summary', 'as:summary', 'summary'];
+const APODS_RECOMMENDED_BY = ['http://activitypods.org/ns/core#recommendedBy', 'apods:recommendedBy'];
+const DC_CREATED = ['http://purl.org/dc/terms/created', 'dc:created'];
+const FOAF_TIPJAR = ['http://xmlns.com/foaf/0.1/tipjar', 'foaf:tipjar'];
 
 const firstOf = (record: Record<string, any> | undefined, keys: string[]): any => {
   if (!record) return undefined;
@@ -33,8 +36,12 @@ const asId = (value: unknown): string | undefined => {
 };
 
 const asLiteral = (value: unknown): string | undefined => {
-  if (!value) return undefined;
+  if (value === undefined || value === null) return undefined;
   if (typeof value === 'string') return value;
+  // Numeric/boolean literals (e.g. vcard:latitude, schema:position) compact to plain JS
+  // values in JSON-LD when the context gives them a @type coercion — not the verbose
+  // {"@value": ...} form, which only shows up for language-tagged or non-coerced literals.
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   if (typeof value === 'object') return (value as any)['@value'];
   return undefined;
 };
@@ -58,16 +65,26 @@ export type NetworkSkill = {
   uri: string;
   skillId: string;
   skillLabel: string;
+  categoryLabel?: string;
   gradeLabel: string;
   gradePosition: number;
   summary?: string;
+  /** URIs of the apods:Endorse activities recommending this skill — each hosted on its own
+   * recommender's Pod, see useEndorsements. */
+  recommendationUris: string[];
 };
 
 export type NetworkMember = {
   webId: string;
+  profileUri: string;
   isSelf: boolean;
   name: string;
   photo?: string;
+  bio?: string;
+  memberSince?: string;
+  /** Whether this member has a Ğ1 wallet linked to their WebID (`foaf:tipjar`, set by PorteJunes
+   *  on wallet creation) -- gates the "Envoyer des Ğ1" handoff button in MemberPanel. */
+  hasWallet: boolean;
   lat?: number;
   lng?: number;
   skills: NetworkSkill[];
@@ -85,22 +102,52 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
   const profilesLoading = profilesQuery.isLoading;
 
   const [members, setMembers] = useState<NetworkMember[]>([]);
-  const [loading, setLoading] = useState(false);
 
   const skillsById = useMemo(() => new Map(skillsCatalog.map(skill => [skill.id, skill])), [skillsCatalog]);
   const gradesById = useMemo(() => new Map(gradesCatalog.map(grade => [grade.id, grade])), [gradesCatalog]);
+  const catalogsReady = skillsCatalog.length > 0 && gradesCatalog.length > 0;
+
+  // `members` is only trustworthy once a resolve() has actually completed *for the current
+  // inputs*. A useState-based "loading" flag set from inside the effect can't capture that
+  // precisely: the render where dataUpdatedAt/catalogsReady/etc. just changed still shows the
+  // *previous* loading value, because the effect that would flip it hasn't run yet (effects fire
+  // after commit) — confirmed live: the deep-link "not visible" check in MapPage kept firing
+  // during that exact one-render gap, moments before the map displayed everyone correctly.
+  // Comparing the current inputs against "what members was last resolved for" is a pure
+  // render-time computation with no such lag: this render either matches the last completed run
+  // or it doesn't, no effect needs to have run yet for that to be known.
+  const lastResolvedRef = useRef<{
+    dataUpdatedAt: number;
+    identityId?: string;
+    skillsCatalog: SkillCatalogEntry[];
+    gradesCatalog: GradeCatalogEntry[];
+  } | null>(null);
+  const isStale =
+    !catalogsReady ||
+    !lastResolvedRef.current ||
+    lastResolvedRef.current.dataUpdatedAt !== profilesQuery.dataUpdatedAt ||
+    lastResolvedRef.current.identityId !== identity?.id ||
+    lastResolvedRef.current.skillsCatalog !== skillsCatalog ||
+    lastResolvedRef.current.gradesCatalog !== gradesCatalog;
 
   useEffect(() => {
     let cancelled = false;
+    if (!catalogsReady) return;
+
+    // Captured now so the ref gets stamped with exactly the inputs this run used, even if props/
+    // query state have already moved on again by the time it finishes.
+    const resolvedFor = { dataUpdatedAt: profilesQuery.dataUpdatedAt, identityId: identity?.id, skillsCatalog, gradesCatalog };
 
     const resolve = async () => {
       const profiles = profilesResult?.data ?? [];
       if (profiles.length === 0) {
-        setMembers([]);
+        if (!cancelled) {
+          setMembers([]);
+          lastResolvedRef.current = resolvedFor;
+        }
         return;
       }
 
-      setLoading(true);
       try {
         const resolved = await Promise.all(
           profiles.map(async (profile: any): Promise<NetworkMember | undefined> => {
@@ -118,6 +165,16 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
               asLiteral(profile['vcard:fn']) ||
               webId;
             const photo = asId(profile['vcard:photo']) || asLiteral(profile['vcard:photo']);
+            const bio = asLiteral(profile['vcard:note']);
+
+            // "Member since": dc:created lives on the WebID document itself, not the profile —
+            // same predicate/resource the Pod provider's own frontend reads it from (its Actor
+            // resource is the WebID). Not already fetched for anything else, hence the extra
+            // request here.
+            const webIdDoc = await fetchResource(webId, token);
+            const memberSince = webIdDoc ? asLiteral(firstOf(webIdDoc, DC_CREATED)) : undefined;
+            const tipjar = webIdDoc ? firstOf(webIdDoc, FOAF_TIPJAR) : undefined;
+            const hasWallet = Array.isArray(tipjar) ? tipjar.length > 0 : Boolean(tipjar);
 
             // Skills: resolve each pair:hasExperience link into a displayable skill.
             const experienceUris = asArray(firstOf(profile, PAIR_HAS_EXPERIENCE)).map(asId).filter(Boolean) as string[];
@@ -130,23 +187,27 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
                 const skill = skillId ? skillsById.get(skillId) : undefined;
                 const grade = gradeId ? gradesById.get(gradeId) : undefined;
                 if (!skill || !grade) return undefined;
+                const category = skill.parentId ? skillsById.get(skill.parentId) : undefined;
                 return {
                   uri,
                   skillId: skill.id,
                   skillLabel: skill.label,
+                  categoryLabel: category?.label,
                   gradeLabel: grade.label,
                   gradePosition: grade.position,
-                  summary: asLiteral(firstOf(resource, AS_SUMMARY))
+                  summary: asLiteral(firstOf(resource, AS_SUMMARY)),
+                  recommendationUris: asArray(firstOf(resource, APODS_RECOMMENDED_BY)).map(asId).filter(Boolean) as string[]
                 };
               })
             );
             const skills = experiences.filter((skill): skill is NetworkSkill => Boolean(skill));
 
-            // Position: backend/services/location.service.js copies a (deliberately jittered)
-            // lat/lng straight onto the profile whenever the user creates/edits their Location —
-            // already right here in the same profile record we fetched for name/photo/skills, no
-            // extra request needed. The Location resource itself stays private; this app never
-            // reads it directly.
+            // Position: the Pod provider itself copies the linked Location's exact lat/lng onto the
+            // profile whenever it's PUT with vcard:hasAddress set (see AddressEditor.tsx) — already
+            // right here in the same profile record we fetched for name/photo/skills, no extra
+            // request needed. The Location resource itself stays private; this app never reads it
+            // directly. Note this is the *exact* geocoded position, not a jittered approximation —
+            // see the README/AddressEditor for the current state of that tradeoff.
             let lat: number | undefined;
             let lng: number | undefined;
             const geo = profile['vcard:hasGeo'];
@@ -162,13 +223,18 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
             // Skip contacts who haven't declared any skill yet — nothing to show on the map.
             if (skills.length === 0) return undefined;
 
-            return { webId, isSelf, name, photo, lat, lng, skills };
+            return { webId, profileUri, isSelf, name, photo, bio, memberSince, hasWallet, lat, lng, skills };
           })
         );
 
-        if (!cancelled) setMembers(resolved.filter((member): member is NetworkMember => Boolean(member)));
-      } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setMembers(resolved.filter((member): member is NetworkMember => Boolean(member)));
+          lastResolvedRef.current = resolvedFor;
+        }
+      } catch {
+        // Still stamp it "resolved" so a genuine error doesn't leave callers spinning forever —
+        // members simply keeps whatever it last successfully held.
+        if (!cancelled) lastResolvedRef.current = resolvedFor;
       }
     };
 
@@ -179,10 +245,10 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
     // profilesQuery.dataUpdatedAt (a timestamp, not an object reference) is used instead of
     // profilesResult itself: Refine reconstructs that wrapper object on every render regardless
     // of whether the underlying data actually changed, which turned this into an infinite loop
-    // (each run called setMembers/setLoading, triggering a re-render, producing a new wrapper,
-    // re-triggering the effect...).
+    // (each run called setMembers, triggering a re-render, producing a new wrapper, re-triggering
+    // the effect...).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profilesQuery.dataUpdatedAt, identity?.id, skillsById, gradesById]);
+  }, [profilesQuery.dataUpdatedAt, identity?.id, skillsById, gradesById, catalogsReady]);
 
-  return { members, loading: profilesLoading || loading };
+  return { members, loading: profilesLoading || isStale, refetch: profilesQuery.refetch };
 };

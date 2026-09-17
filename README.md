@@ -55,6 +55,13 @@ Le shape tree `pair:ExperienceAssociation` est déployé sur
    ```bash
    cd backend && yarn install && yarn dev
    ```
+   Le backend cible un Pod provider ActivityPods **2.3** (branche `next`) : `@activitypods/app` doit
+   être en 2.3.x et `@semapps/*` en 1.2.x, les 2.2/1.1 publiés attendent encore les `interop:DataGrant`
+   que 2.3 a supprimés (sinon l'enregistrement de l'app échoue silencieusement côté backend et le
+   frontend affiche « L'application n'écoute pas … »). Pour développer sur le framework lui-même,
+   `yarn link-packages` lie `@activitypods/app` à `activitypods/app-framework/app` (`yarn link` lancé
+   là-bas au préalable) ; ce dépôt étant en TypeScript, `yarn dev` passe par `tsx`. Retour aux paquets
+   npm : `yarn unlink-packages`.
 4. Copiez `frontend/.env` en `frontend/.env.local`, renseignez `VITE_MAPBOX_ACCESS_TOKEN`, puis :
    ```bash
    cd frontend && yarn install && yarn dev
@@ -102,12 +109,14 @@ Mapbox...).
   retrouver — voir `backend/services/experience.service.js`.
 - `vcard:Location` : l'adresse du domicile, ajoutée/modifiée directement dans l'app (voir
   `frontend/src/components/AddressEditor.tsx`) — visible aussi depuis le gestionnaire de
-  porte-données. Contrairement aux compétences, cette ressource reste **privée** : seule une
-  position approximative (légèrement décalée aléatoirement, voir `JITTER_DEGREES` dans
-  `backend/services/location.service.js`) est recopiée sur le profil de l'utilisateur — déjà
-  visible nativement par ses contacts, sans action de partage supplémentaire. L'adresse exacte
-  n'est donc jamais exposée par l'application. Le consentement est demandé une seule fois, avant
-  la première saisie.
+  porte-données. Contrairement aux compétences, cette ressource reste **privée** (ses détails —
+  rue, code postal... — ne sont jamais exposés par l'application) : seule sa position géographique
+  (`vcard:hasGeo`) est recopiée sur le profil de l'utilisateur, déjà visible nativement par ses
+  contacts, sans action de partage supplémentaire. Cette recopie est gérée nativement par le pod
+  provider lui-même (hook `before.put` sur le profil, voir `pod-provider/backend/services/profiles/
+  profile.ts` dans le dépôt ActivityPods) dès que le profil est mis à jour (PUT) avec
+  `vcard:hasAddress` renseigné — l'app n'a donc aucun code spécifique à écrire pour ça. Le
+  consentement est demandé une seule fois, avant la première saisie.
 
 Les recommandations entre pairs ne sont pas encore implémentées dans cette version.
 

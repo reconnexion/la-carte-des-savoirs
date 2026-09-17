@@ -1,4 +1,9 @@
-const { triple, namedNode } = require('@rdfjs/data-model');
+// @rdfjs/data-model v2 is ESM-only: under require(), its exports land under `.default` (CJS
+// interop) as a DataFactory *instance*, and the factory method is `quad` (not the old RDF/JS
+// `triple` alias). `quad` reads `this` internally (for its default `graph` argument), so it can't
+// be destructured off the instance like `namedNode` (which doesn't) — call it as `rdf.quad(...)`.
+const rdf = require('@rdfjs/data-model').default;
+const { namedNode } = rdf;
 const urlJoin = require('url-join');
 const { PodResourcesHandlerMixin } = require('@activitypods/app');
 const CONFIG = require('../config/config');
@@ -42,7 +47,7 @@ module.exports = {
       if (profileUri) {
         await ctx.call('pod-resources.patch', {
           resourceUri: profileUri,
-          triplesToAdd: [triple(namedNode(profileUri), namedNode(PAIR_HAS_EXPERIENCE), namedNode(resourceUri))],
+          triplesToAdd: [rdf.quad(namedNode(profileUri), namedNode(PAIR_HAS_EXPERIENCE), namedNode(resourceUri))],
           actorUri
         });
       } else {
@@ -57,7 +62,7 @@ module.exports = {
       if (profileUri) {
         await ctx.call('pod-resources.patch', {
           resourceUri: profileUri,
-          triplesToRemove: [triple(namedNode(profileUri), namedNode(PAIR_HAS_EXPERIENCE), namedNode(resourceUri))],
+          triplesToRemove: [rdf.quad(namedNode(profileUri), namedNode(PAIR_HAS_EXPERIENCE), namedNode(resourceUri))],
           actorUri
         });
       }

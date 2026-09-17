@@ -14,6 +14,40 @@ type Props = {
   onSelect: (member: NetworkMember) => void;
 };
 
+// Classic teardrop map pin (rounded head + pointed tip), viewBox sized so the tip sits exactly at
+// (17, 44) — the bottom-center of the shape — to line up with <Marker anchor="bottom">, i.e. the
+// point (not the center) marks the actual coordinate, same convention as Google Maps.
+const PIN_WIDTH = 34;
+const PIN_HEIGHT = 44;
+const PIN_PATH = 'M17 0C7.6 0 0 7.6 0 17c0 12.7 17 27 17 27s17-14.3 17-27C34 7.6 26.4 0 17 0z';
+const AVATAR_SIZE = 24;
+
+const MapPin = ({ photo, selected, onClick }: { photo?: string; selected: boolean; onClick: () => void }) => (
+  <div style={{ position: 'relative', width: PIN_WIDTH, height: PIN_HEIGHT, cursor: 'pointer' }} onClick={onClick}>
+    <svg width={PIN_WIDTH} height={PIN_HEIGHT} viewBox={`0 0 ${PIN_WIDTH} ${PIN_HEIGHT}`}>
+      <path
+        d={PIN_PATH}
+        fill={selected ? '#faad14' : '#1677ff'}
+        stroke="#fff"
+        strokeWidth={2}
+        style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.4))' }}
+      />
+      <circle cx={17} cy={17} r={13} fill="#fff" />
+    </svg>
+    <div
+      style={{
+        position: 'absolute',
+        top: (PIN_WIDTH - AVATAR_SIZE) / 2,
+        left: (PIN_WIDTH - AVATAR_SIZE) / 2,
+        width: AVATAR_SIZE,
+        height: AVATAR_SIZE
+      }}
+    >
+      <Avatar size={AVATAR_SIZE} src={photo} icon={!photo && <UserOutlined />} />
+    </div>
+  </div>
+);
+
 // Centered so continental France is visible as a whole on load, regardless of member locations.
 const FRANCE_VIEW = { longitude: 2.4, latitude: 46.6, zoom: 5.2 };
 
@@ -52,20 +86,11 @@ const NetworkMap = ({ members, selectedWebId, onSelect }: Props) => {
         mapStyle="mapbox://styles/mapbox/streets-v12"
       >
         {located.map(member => (
-          <Marker
-            key={member.webId}
-            longitude={member.lng!}
-            latitude={member.lat!}
-            onClick={() => onSelect(member)}
-          >
-            <Avatar
-              src={member.photo}
-              icon={!member.photo && <UserOutlined />}
-              style={{
-                border: `2px solid ${selectedWebId === member.webId ? '#1677ff' : '#fff'}`,
-                boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
-                cursor: 'pointer'
-              }}
+          <Marker key={member.webId} longitude={member.lng!} latitude={member.lat!} anchor="bottom">
+            <MapPin
+              photo={member.photo}
+              selected={selectedWebId === member.webId}
+              onClick={() => onSelect(member)}
             />
           </Marker>
         ))}
