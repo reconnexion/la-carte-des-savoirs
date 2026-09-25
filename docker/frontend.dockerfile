@@ -1,23 +1,38 @@
-FROM node:24-alpine
+###
+# Build stage
+###
+FROM node:24-alpine AS builder
 
-RUN node -v
-RUN npm -v
-
-WORKDIR /app/frontend
-
-RUN apk add --update --no-cache autoconf bash libtool automake python3 py3-pip alpine-sdk openssh-keygen yarn nano
-
-RUN yarn global add serve
-
+# Vite inlines these values into the bundle at build time, so they must be set
+# before `yarn build` (and a rebuild is required to change any of them).
+# Values passed here take precedence over the defaults in `frontend/.env`.
 ARG VITE_APP_NAME
 ARG VITE_APP_DESCRIPTION
 ARG VITE_APP_LANG
 ARG VITE_BACKEND_URL
 ARG VITE_BACKEND_CLIENT_ID
 ARG VITE_POD_PROVIDER_BASE_URL
-ARG VITE_SHAPE_REPOSITORY_URL
+ARG VITE_SHAPE_REPOSITORY_URL=https://shapes.activitypods.org/
 ARG VITE_MAPBOX_ACCESS_TOKEN
-ARG VITE_PORT
+ARG VITE_PORTEJUNES_URL
+
+ENV VITE_APP_NAME=$VITE_APP_NAME \
+    VITE_APP_DESCRIPTION=$VITE_APP_DESCRIPTION \
+    VITE_APP_LANG=$VITE_APP_LANG \
+    VITE_BACKEND_URL=$VITE_BACKEND_URL \
+    VITE_BACKEND_CLIENT_ID=$VITE_BACKEND_CLIENT_ID \
+    VITE_POD_PROVIDER_BASE_URL=$VITE_POD_PROVIDER_BASE_URL \
+    VITE_SHAPE_REPOSITORY_URL=$VITE_SHAPE_REPOSITORY_URL \
+    VITE_MAPBOX_ACCESS_TOKEN=$VITE_MAPBOX_ACCESS_TOKEN \
+    VITE_PORTEJUNES_URL=$VITE_PORTEJUNES_URL
+
+# Cap the V8 heap of tsc/vite: the build runs on the Coolify server next to
+# Fuseki, which must not get OOM-killed by a build.
+ENV NODE_OPTIONS=--max-old-space-size=1536
+
+WORKDIR /app/frontend
+
+RUN apk add --update --no-cache autoconf bash libtool automake python3 py3-pip alpine-sdk openssh-keygen yarn nano
 
 # Install packages first so that Docker doesn't run `yarn install` if the packages haven't changed
 # See https://making.close.com/posts/reduce-docker-image-size
@@ -29,6 +44,17 @@ ADD frontend /app/frontend
 
 RUN yarn run build
 
+###
+# Runtime stage
+###
+FROM node:24-alpine
+
+WORKDIR /app/frontend
+
+RUN yarn global add serve && yarn cache clean
+
+COPY --from=builder /app/frontend/dist ./dist
+
 EXPOSE 4000
 
-CMD serve -s dist -l 4000
+CMD [ "serve", "-s", "dist", "-l", "4000" ]

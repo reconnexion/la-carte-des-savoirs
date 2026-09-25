@@ -85,6 +85,22 @@ connectez-vous avec chacun dans deux navigateurs (ou fenêtres de navigation pri
 
 `cd backend && yarn dev` Démarre le backend de l'application (avec REPL Moleculer et hot-reload).
 
+## Environnement de dev et previews de pull requests (Coolify)
+
+L'instance de dev et une preview par pull request sont construites et lancées par [Coolify](https://coolify.io) directement depuis ce dépôt, à partir de [`docker-compose.coolify.yml`](./docker-compose.coolify.yml) et des Dockerfiles de [`/docker`](./docker). GitHub Actions ne construit plus d'image pour elles (le workflow ne construit que les images de release, sur les tags `v*`).
+
+Côté Coolify (serveur `test-server`, qui héberge et construit toutes les instances `dev.*`) :
+
+- Une **application** (build pack _Docker Compose_, fichier `/docker-compose.coolify.yml`) suit la branche `master` et sert [dev.la-carte-des-savoirs.com](https://dev.la-carte-des-savoirs.com) : chaque push sur `master` la reconstruit et la redéploie.
+- Les **preview deployments** sont activés : ouvrir ou mettre à jour une pull request vers `master` construit une stack séparée sur son propre domaine (`lcds-pr-<n>.dev.reconnexion.coop`, voir le _Preview URL Template_ de l'application), supprimée à la fermeture ou au merge de la PR. La GitHub App ajoute un commentaire avec le lien sur chaque PR. Seules les PR dont l'auteur est collaborateur **direct** du dépôt ont une preview (les previews publiques sont désactivées, le dépôt étant public).
+- Les stacks partagent le Fuseki du service `shared-infra`, mais chacune a ses propres datasets, nommés d'après la stack (`lacartedessavoirs-backend-pr-<n>` pour les previews) ; l'instance de dev garde ses datasets historiques `lacartedessavoirs-dev` / `settings-lacartedessavoirs-dev` grâce aux variables `MAIN_DATASET` / `SETTINGS_DATASET`, définies uniquement dans le scope production. Chaque stack a aussi son propre Redis. Seul le backend rejoint le réseau partagé `coolify`.
+- Les URLs du frontend sont inlinées par Vite au build : le compose passe donc le domaine généré par Coolify pour la stack (`SERVICE_FQDN_*`) en argument de build. Les variables à définir dans Coolify (`SPARQL_ENDPOINT`, `JENA_PASSWORD`, `POD_PROVIDER_BASE_URL`...) sont listées en tête du compose ; elles doivent l'être dans le scope production **et** dans le scope preview.
+- Au premier démarrage, le backend enregistre son propre acteur (`/api/app`) dans son dataset de settings, avec le domaine qu'il a à ce moment-là. Les domaines doivent donc être définis dans Coolify **avant** le premier déploiement ; s'ils changent ensuite, il faut supprimer les datasets de la stack dans Fuseki et redéployer, sinon le backend refuse de démarrer (`Remote resource ... cannot be modified`).
+
+Fermer une PR supprime ses conteneurs mais pas ses datasets Fuseki : un cron nocturne sur le serveur Coolify (`cleanup-preview-datasets.sh` dans le dépôt `shared-infra`) supprime les datasets `*-pr-<n>` qu'aucun conteneur ne déclare plus.
+
+Les builds tournent sur le serveur Coolify : l'image du frontend plafonne le tas de Node (`NODE_OPTIONS` dans `docker/frontend.dockerfile`) pour qu'un build ne puisse pas affamer les autres conteneurs, Fuseki en particulier.
+
 ## Production
 
 `make build-prod` Construit les images Docker pour la production (inclut un reverse-proxy Traefik).
