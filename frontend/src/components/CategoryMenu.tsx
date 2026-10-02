@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Menu, Layout, Button, Drawer } from 'antd';
-import { AppstoreOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import { Menu, Layout, Button, Drawer, Tooltip } from 'antd';
+import { AppstoreOutlined, HeartFilled, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import type { SkillCatalogEntry } from '../config/catalog';
 import { buildSkillsTree } from '../config/catalog';
 import { getCategoryIcon } from '../config/categoryIcons';
+import { DONATION_URL } from '../config/donation';
 
 const { Sider } = Layout;
 
@@ -82,7 +83,26 @@ const CategoryMenu = ({ skills, selectedSkillId, onSelect, isMobile, mobileOpen,
       trigger={null}
       style={{ borderRight: '1px solid #f0f0f0', overflow: 'visible', position: 'relative' }}
     >
-      <div style={{ height: '100%', overflow: 'auto' }}>{menu}</div>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, overflow: 'auto' }}>{menu}</div>
+        {/* Same place as in L'Entraide and PorteJunes: bottom of the left sidebar. On mobile, where
+            this sidebar is the "Filtres" drawer instead, the link moves to the user menu. */}
+        {DONATION_URL && (
+          <div style={{ padding: collapsed ? '12px 8px' : '12px 16px' }}>
+            <Tooltip title={collapsed ? 'Soutenir cette application' : undefined} placement="right">
+              <Button
+                icon={<HeartFilled style={{ color: '#ff4d4f' }} />}
+                href={DONATION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                block
+              >
+                {!collapsed && 'Soutenir cette application'}
+              </Button>
+            </Tooltip>
+          </div>
+        )}
+      </div>
       {/* Floats on the sider's own edge, half-overlapping the content area — a common pattern
           (VSCode, Notion...) that reads more like a natural "handle" than a toolbar button. */}
       <Button

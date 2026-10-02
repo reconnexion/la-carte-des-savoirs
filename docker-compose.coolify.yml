@@ -74,6 +74,8 @@ services:
         VITE_MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN:-}
         # Unset hides the "Envoyer des Ğ1" button
         VITE_PORTEJUNES_URL: ${PORTEJUNES_URL:-}
+        # Unset hides the "Soutenir cette application" link
+        VITE_DONATION_URL: ${DONATION_URL:-}
     restart: always
     depends_on:
       - backend

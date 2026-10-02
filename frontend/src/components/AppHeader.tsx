@@ -1,5 +1,5 @@
 import { Layout, Button, ConfigProvider, Space, Typography } from 'antd';
-import { IdcardOutlined } from '@ant-design/icons';
+import { CheckSquareOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router';
 import Logo from './Logo';
 import UserMenu from './UserMenu';
@@ -45,7 +45,7 @@ const AppHeader = ({ onOpenProfile, isMobile }: Props) => {
             components: { Button: { defaultGhostBorderColor: 'rgba(255,255,255,0.6)' } }
           }}
         >
-          <Button ghost icon={<IdcardOutlined />} onClick={onOpenProfile} aria-label="Mes compétences">
+          <Button ghost icon={<CheckSquareOutlined />} onClick={onOpenProfile} aria-label="Mes compétences">
             {!isMobile && 'Mes compétences'}
           </Button>
         </ConfigProvider>

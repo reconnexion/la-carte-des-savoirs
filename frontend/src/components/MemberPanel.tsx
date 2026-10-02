@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Layout, Avatar, Typography, Button, Space, Drawer } from 'antd';
-import { UserOutlined, CloseOutlined, MessageOutlined, EditOutlined, IdcardOutlined } from '@ant-design/icons';
+import { UserOutlined, CloseOutlined, MessageOutlined, CheckSquareOutlined, IdcardOutlined } from '@ant-design/icons';
 import { useGetIdentity } from '@refinedev/core';
 import type { NetworkMember } from '../hooks/useNetworkSkills';
 import { useOwnTipjar } from '../hooks/useOwnTipjar';
@@ -117,7 +117,7 @@ const MemberPanel = ({ member, onClose, onEditProfile, isMobile }: Props) => {
                 Éditer mon profil
               </Button>
             )}
-            <Button size="small" icon={<EditOutlined />} onClick={onEditProfile}>
+            <Button size="small" icon={<CheckSquareOutlined />} onClick={onEditProfile}>
               Modifier mes compétences
             </Button>
           </Space>

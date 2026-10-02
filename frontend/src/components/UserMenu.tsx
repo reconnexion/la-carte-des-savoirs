@@ -1,10 +1,19 @@
 import { useGetIdentity } from '@refinedev/core';
 import { Avatar, Dropdown, Space } from 'antd';
-import { AppstoreOutlined, DatabaseOutlined, LogoutOutlined, SettingOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  AppstoreOutlined,
+  DatabaseOutlined,
+  HeartFilled,
+  LogoutOutlined,
+  SettingOutlined,
+  TeamOutlined,
+  UserOutlined
+} from '@ant-design/icons';
 
 import useNodeinfo from '../hooks/useNodeinfo';
 import urlJoin from '../utils/urlJoin';
 import { authProvider } from '../providers';
+import { DONATION_URL } from '../config/donation';
 
 // Pages of the Pod provider's own frontend, the same ones Welcome to my place's user menu links to.
 const POD_PROVIDER_PAGES = [
@@ -47,6 +56,21 @@ const UserMenu = ({ isMobile }: Props) => {
                   </a>
                 )
               }))
+            : []),
+          // On desktop this link sits at the bottom of the left sidebar (CategoryMenu), which on
+          // mobile is the "Filtres" drawer instead: same fallback as PorteJunes' user menu.
+          ...(isMobile && DONATION_URL
+            ? [
+                {
+                  key: 'support',
+                  icon: <HeartFilled style={{ color: '#ff4d4f' }} />,
+                  label: (
+                    <a href={DONATION_URL} target="_blank" rel="noopener noreferrer">
+                      Soutenir cette application
+                    </a>
+                  )
+                }
+              ]
             : []),
           {
             key: 'logout',
