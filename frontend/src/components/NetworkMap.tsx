@@ -5,6 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Avatar } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import type { NetworkMember } from '../hooks/useNetworkSkills';
+import { PRIMARY_COLOR } from '../config/theme';
 
 const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string;
 
@@ -27,7 +28,7 @@ const MapPin = ({ photo, selected, onClick }: { photo?: string; selected: boolea
     <svg width={PIN_WIDTH} height={PIN_HEIGHT} viewBox={`0 0 ${PIN_WIDTH} ${PIN_HEIGHT}`}>
       <path
         d={PIN_PATH}
-        fill={selected ? '#faad14' : '#1677ff'}
+        fill={selected ? '#faad14' : PRIMARY_COLOR}
         stroke="#fff"
         strokeWidth={2}
         style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.4))' }}

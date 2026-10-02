@@ -26,5 +26,11 @@
       "app_offline": "Le serveur de l'application est hors ligne",
       "app_status_unavailable": "Impossible de vérifier l'état de l'application"
     }
+  },
+  "location": {
+    "location": "Adresse"
+  },
+  "experiences": {
+    "experiences": "Compétence"
   }
 }

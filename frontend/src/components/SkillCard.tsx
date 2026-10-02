@@ -13,6 +13,7 @@ import { GRADE_COLORS } from '../config/gradeColors';
 import { openAppProfileUrl } from '../config/openApp';
 import { authProvider } from '../providers';
 import EndorseDialog from './EndorseDialog';
+import { PRIMARY_COLOR, PRIMARY_COLOR_BG } from '../config/theme';
 
 const { Text, Paragraph } = Typography;
 
@@ -148,7 +149,7 @@ const SkillCard = ({ member, skill, token }: Props) => {
   return (
     <div style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid #f0f0f0' }}>
       <Space align="center">
-        <Avatar size={32} icon={getCategoryIcon(skill.categoryLabel)} style={{ background: '#e6f4ff', color: '#1677ff' }} />
+        <Avatar size={32} icon={getCategoryIcon(skill.categoryLabel)} style={{ background: PRIMARY_COLOR_BG, color: PRIMARY_COLOR }} />
         <Text strong>{skill.skillLabel}</Text>
         <Tag color={GRADE_COLORS[skill.gradePosition] ?? 'default'}>{skill.gradeLabel}</Tag>
       </Space>

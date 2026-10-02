@@ -8,6 +8,7 @@ import { useCatalogs } from '../hooks/useCatalogs';
 import { getCategoryIcon } from '../config/categoryIcons';
 import { GRADE_COLORS } from '../config/gradeColors';
 import type { SkillCatalogEntry, GradeCatalogEntry } from '../config/catalog';
+import { PRIMARY_COLOR, PRIMARY_COLOR_BG } from '../config/theme';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -143,7 +144,7 @@ const ProfileDialog = ({ open, onClose }: Props) => {
         renderItem={item => (
           <List.Item actions={[<Button type="text" icon={<DeleteOutlined />} onClick={() => handleDelete(item.uri)} />]}>
             <Space align="center">
-              <Avatar size={32} icon={getCategoryIcon(item.categoryLabel)} style={{ background: '#e6f4ff', color: '#1677ff' }} />
+              <Avatar size={32} icon={getCategoryIcon(item.categoryLabel)} style={{ background: PRIMARY_COLOR_BG, color: PRIMARY_COLOR }} />
               <Text strong>{item.skillLabel}</Text>
               <Tag color={GRADE_COLORS[item.gradePosition] ?? 'default'}>{item.gradeLabel}</Tag>
             </Space>

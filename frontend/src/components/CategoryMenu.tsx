@@ -33,15 +33,25 @@ const CategoryMenu = ({ skills, selectedSkillId, onSelect, isMobile, mobileOpen,
       key: category.id,
       icon: getCategoryIcon(category.label),
       label: category.label,
+      // Clicking a category's title selects the whole category (MapPage then matches any of its
+      // children skills), on top of antd's default behaviour of expanding it. The drawer is kept
+      // open on mobile here, so the user can still narrow down to one of the precise skills.
+      onTitleClick: () => onSelect(category.id),
       children: category.children.map(skill => ({ key: skill.id, label: skill.label }))
     }))
   ];
+
+  // A selected category highlights all its children skills too, as they're all part of the filter.
+  const selectedCategory = tree.find(category => category.id === selectedSkillId);
+  const selectedKeys = selectedCategory
+    ? [selectedCategory.id, ...selectedCategory.children.map(skill => skill.id)]
+    : [selectedSkillId ?? ALL_KEY];
 
   const menu = (
     <Menu
       mode="inline"
       style={{ borderRight: 0 }}
-      selectedKeys={[selectedSkillId ?? ALL_KEY]}
+      selectedKeys={selectedKeys}
       openKeys={openKeys}
       onOpenChange={setOpenKeys}
       onClick={({ key }) => {

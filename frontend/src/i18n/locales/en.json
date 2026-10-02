@@ -26,5 +26,11 @@
       "app_offline": "The app backend is offline",
       "app_status_unavailable": "Unable to check app status"
     }
+  },
+  "location": {
+    "location": "Address"
+  },
+  "experiences": {
+    "experiences": "Skill"
   }
 }

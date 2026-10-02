@@ -12,10 +12,11 @@ import { authProvider, dataProvider, DEFAULT_POD_PROVIDER } from './providers';
 import { i18nProvider } from './i18n';
 import AppGuard from './components/AppGuard';
 import MapPage from './pages/MapPage';
+import { PRIMARY_COLOR } from './config/theme';
 
 const App = () => (
   <BrowserRouter>
-    <ConfigProvider locale={frFR} theme={{ ...RefineThemes.Blue, token: { ...RefineThemes.Blue.token, colorPrimary: '#1677ff' } }}>
+    <ConfigProvider locale={frFR} theme={{ ...RefineThemes.Purple, token: { ...RefineThemes.Purple.token, colorPrimary: PRIMARY_COLOR } }}>
       <AntdApp>
         <Refine
           authProvider={authProvider}

@@ -128,7 +128,7 @@ const AddressEditor = ({ onLocationChange }: Props) => {
         <div style={{ marginTop: 4 }}>
           <Space size={4}>
             <CheckCircleFilled style={{ color: '#52c41a' }} />
-            <Text type="secondary">Votre position est visible par vos contacts.</Text>
+            <Text type="secondary">Votre position approximative (à 1 km près) est visible par vos contacts.</Text>
           </Space>
         </div>
       </div>
@@ -141,8 +141,9 @@ const AddressEditor = ({ onLocationChange }: Props) => {
     <div>
       {!locationUri && (
         <Paragraph type="secondary" style={{ marginBottom: 8 }}>
-          Les détails de votre adresse (rue, code postal...) ne sont jamais partagés. Seule sa position sur la carte
-          sera visible par vos contacts actuels, et par tout nouveau contact que vous ajouterez par la suite.
+          Les détails de votre adresse (rue, code postal...) ne sont jamais partagés. Seule une position approximative
+          (à 1 km près) sera visible sur la carte par vos contacts actuels, et par tout nouveau contact que vous
+          ajouterez par la suite.
         </Paragraph>
       )}
       {locationUri || consent ? (
@@ -157,7 +158,7 @@ const AddressEditor = ({ onLocationChange }: Props) => {
         </Space>
       ) : (
         <Checkbox checked={consent} onChange={event => setConsent(event.target.checked)}>
-          J'accepte que ma position soit visible par mes contacts
+          J'accepte que ma position approximative (à 1 km près) soit visible par mes contacts
         </Checkbox>
       )}
       {error && (

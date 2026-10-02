@@ -192,7 +192,12 @@ const MapPage = () => {
             />
           </div>
         </Content>
-        <MemberPanel member={selectedMember} onClose={() => navigate('/')} isMobile={isMobile} />
+        <MemberPanel
+          member={selectedMember}
+          onClose={() => navigate('/')}
+          onEditProfile={() => setProfileDialogOpen(true)}
+          isMobile={isMobile}
+        />
       </Layout>
       <ProfileDialog open={profileDialogOpen} onClose={handleProfileDialogClose} />
     </Layout>
