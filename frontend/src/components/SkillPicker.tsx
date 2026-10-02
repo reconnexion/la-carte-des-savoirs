@@ -17,7 +17,7 @@ type Props = {
 
 /** Category → precise skill → level (+ optional note) picker, reused by onboarding (which
  * queues picks before creating them) and the profile page (which creates immediately). */
-const SkillPicker = ({ skills, grades, onAdd, addLabel = 'Ajouter cette compétence', loading }: Props) => {
+const SkillPicker = ({ skills, grades, onAdd, addLabel = 'Ajouter ce savoir', loading }: Props) => {
   const [categoryId, setCategoryId] = useState<string>();
   const [skillId, setSkillId] = useState<string>();
   const [gradeId, setGradeId] = useState<string>(grades[0]?.id);
@@ -52,7 +52,7 @@ const SkillPicker = ({ skills, grades, onAdd, addLabel = 'Ajouter cette compéte
         />
         <Select
           style={{ width: 260 }}
-          placeholder="Compétence précise"
+          placeholder="Savoir précis"
           value={skillId}
           disabled={!categoryId}
           onChange={setSkillId}

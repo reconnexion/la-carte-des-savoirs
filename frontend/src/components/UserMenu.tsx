@@ -3,7 +3,7 @@ import { Avatar, Dropdown, Space } from 'antd';
 import {
   AppstoreOutlined,
   DatabaseOutlined,
-  HeartFilled,
+  HeartOutlined,
   LogoutOutlined,
   SettingOutlined,
   TeamOutlined,
@@ -63,10 +63,11 @@ const UserMenu = ({ isMobile }: Props) => {
             ? [
                 {
                   key: 'support',
-                  icon: <HeartFilled style={{ color: '#ff4d4f' }} />,
+                  // Plain outlined icon, like the menu's other entries.
+                  icon: <HeartOutlined />,
                   label: (
                     <a href={DONATION_URL} target="_blank" rel="noopener noreferrer">
-                      Soutenir cette application
+                      Soutenir cette appli
                     </a>
                   )
                 }

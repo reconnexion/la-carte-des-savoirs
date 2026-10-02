@@ -75,7 +75,7 @@ const MemberPanel = ({ member, onClose, onEditProfile, isMobile }: Props) => {
       <div
         style={{
           position: 'relative',
-          // Same background antd's Menu uses for a selected item (e.g. "Toutes les compétences"
+          // Same background antd's Menu uses for a selected item (e.g. "Tous les savoirs"
           // in CategoryMenu) — keeps the panels visually consistent instead of introducing a
           // separate, heavier blue gradient just for this one.
           background: PRIMARY_COLOR_BG,
@@ -118,7 +118,7 @@ const MemberPanel = ({ member, onClose, onEditProfile, isMobile }: Props) => {
               </Button>
             )}
             <Button size="small" icon={<CheckSquareOutlined />} onClick={onEditProfile}>
-              Modifier mes compétences
+              Modifier mes savoirs
             </Button>
           </Space>
         )}
@@ -138,7 +138,7 @@ const MemberPanel = ({ member, onClose, onEditProfile, isMobile }: Props) => {
 
       <div style={{ padding: isMobile ? '20px 16px' : '20px 24px' }}>
         <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-          {member.skills.length} compétence{member.skills.length > 1 ? 's' : ''}
+          {member.skills.length} savoir{member.skills.length > 1 ? 's' : ''}
         </Text>
         {member.skills.map(skill => (
           <SkillCard key={skill.uri} member={member} skill={skill} token={member.isSelf ? authProvider.getSession()?.token : undefined} />

@@ -34,7 +34,7 @@ services:
       - coolify
     environment:
       SEMAPPS_APP_NAME: ${APP_NAME:-La Carte des Savoirs}
-      SEMAPPS_APP_DESCRIPTION: ${APP_DESCRIPTION:-Partagez vos savoirs et compétences avec votre réseau}
+      SEMAPPS_APP_DESCRIPTION: ${APP_DESCRIPTION:-Partagez vos savoirs avec votre réseau}
       SEMAPPS_APP_LANG: ${APP_LANG:-fr}
       SEMAPPS_HOME_URL: https://${SERVICE_FQDN_BACKEND}/api/
       SEMAPPS_FRONT_URL: https://${SERVICE_FQDN_FRONTEND}/
@@ -64,7 +64,7 @@ services:
       # generated SERVICE_FQDN_* above) rather than when the container starts.
       args:
         VITE_APP_NAME: ${APP_NAME:-La Carte des Savoirs}
-        VITE_APP_DESCRIPTION: ${APP_DESCRIPTION:-Partagez vos savoirs et compétences avec votre réseau}
+        VITE_APP_DESCRIPTION: ${APP_DESCRIPTION:-Partagez vos savoirs avec votre réseau}
         VITE_APP_LANG: ${APP_LANG:-fr}
         VITE_BACKEND_URL: https://${SERVICE_FQDN_BACKEND}/api/
         VITE_BACKEND_CLIENT_ID: https://${SERVICE_FQDN_BACKEND}/api/app

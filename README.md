@@ -2,8 +2,8 @@
 
 # La Carte des Savoirs
 
-Partagez vos savoirs et compétences avec votre réseau, sur une carte géographique. Chacun déclare
-les compétences qu'il maîtrise (avec son niveau — "Débutant" y compris, c'est important !) et
+Partagez vos savoirs avec votre réseau, sur une carte géographique. Chacun déclare
+les savoirs qu'il maîtrise (avec son niveau — "Débutant" y compris, c'est important !) et
 apparaît sur la carte pour ses contacts.
 
 Réécriture complète de l'application originale (react-admin / ActivityPods 1.x, conservée sur la
@@ -13,9 +13,9 @@ branche [`0.1.x`](../../tree/0.1.x)) pour ActivityPods 2.x, avec :
   [`@activitypods/refine-providers`](https://github.com/activitypods/refine-providers)
 - [Mapbox GL](https://docs.mapbox.com/mapbox-gl-js/) pour la carte
 - [PAIR](https://virtual-assembly.org/ontologies/pair-2021-summer/index-en.html) comme ontologie
-  pour les compétences (`pair:ExperienceAssociation`, `pair:Skill`, `pair:Grade`)
+  pour les savoirs (`pair:ExperienceAssociation`, `pair:Skill`, `pair:Grade`)
 - un petit backend Moleculer ([`@activitypods/app`](https://github.com/activitypods/activitypods))
-  qui sert les catalogues de compétences/niveaux et déclare les besoins d'accès de l'application
+  qui sert les catalogues de savoirs/niveaux et déclare les besoins d'accès de l'application
 
 ## Architecture
 
@@ -27,11 +27,11 @@ frontend/   Vite + React + TypeScript + Refine + Antd + @activitypods/refine-pro
 Deux choix d'architecture notables, détaillés dans les commentaires du code (voir notamment
 `backend/services/experience.service.js` et `frontend/src/hooks/useNetworkSkills.ts`) :
 
-- Les compétences (et l'adresse, une fois consentie) sont **publiques en lecture** plutôt que
-  partagées individuellement par contact via le mécanisme SAI habituel — ça évite d'avoir à
+- Les savoirs (et l'adresse, une fois consentie) sont **publics en lecture** plutôt que
+  partagés individuellement par contact via le mécanisme SAI habituel — ça évite d'avoir à
   ré-partager automatiquement à chaque nouveau contact. La confidentialité pratique vient du fait
   que l'application ne présente jamais que les contacts de l'utilisateur connecté.
-- Les compétences d'un contact sont retrouvées via `getList('profile')` (qui reflète nativement
+- Les savoirs d'un contact sont retrouvés via `getList('profile')` (qui reflète nativement
   les profils visibles par l'utilisateur connecté) puis le prédicat `pair:hasExperience` posé sur
   chaque profil — sans service d'agrégation/miroir dédié côté backend.
 
@@ -67,9 +67,9 @@ Le shape tree `pair:ExperienceAssociation` est déployé sur
    cd frontend && yarn install && yarn dev
    ```
 5. Ouvrez <http://localhost:4001>, connectez-vous avec le pod provider local
-   (<http://localhost:3000>), ajoutez vos premières compétences.
+   (<http://localhost:3000>), ajoutez vos premiers savoirs.
 
-Pour tester le réseau (compétences visibles entre contacts), créez un deuxième compte sur le pod
+Pour tester le réseau (savoirs visibles entre contacts), créez un deuxième compte sur le pod
 provider local, mettez les deux comptes en contact via son interface ("Mon réseau"), puis
 connectez-vous avec chacun dans deux navigateurs (ou fenêtres de navigation privée) différents.
 
@@ -114,18 +114,18 @@ Mapbox...).
 
 ## Modèle de données
 
-- `pair:Skill` : catalogue de compétences (catégories + compétences précises, hiérarchie à 2
+- `pair:Skill` : catalogue de savoirs (catégories + savoirs précis, hiérarchie à 2
   niveaux via `skos:broader`), hébergé publiquement par notre backend et seedé depuis
   `backend/services/importers/data/skills-catalog-fr.json`.
 - `pair:Grade` : les 4 niveaux (Débutant, Intermédiaire, Confirmé, Expert), même mécanisme.
-- `pair:ExperienceAssociation` : une compétence déclarée par un utilisateur dans son propre Pod
+- `pair:ExperienceAssociation` : un savoir déclaré par un utilisateur dans son propre Pod
   (`pair:experienceSkill` + `pair:experienceGrade`, tous deux des références vers les catalogues
   ci-dessus, + `as:summary` optionnel). Rendue publique en lecture à la création, et référencée
   depuis le profil de l'utilisateur (`pair:hasExperience`) pour que ses contacts puissent la
   retrouver — voir `backend/services/experience.service.js`.
 - `vcard:Location` : l'adresse du domicile, ajoutée/modifiée directement dans l'app (voir
   `frontend/src/components/AddressEditor.tsx`) — visible aussi depuis le gestionnaire de
-  porte-données. Contrairement aux compétences, cette ressource reste **privée** (ses détails —
+  porte-données. Contrairement aux savoirs, cette ressource reste **privée** (ses détails —
   rue, code postal... — ne sont jamais exposés par l'application) : seule sa position géographique
   (`vcard:hasGeo`) est recopiée sur le profil de l'utilisateur, déjà visible nativement par ses
   contacts, sans action de partage supplémentaire. Cette recopie est gérée nativement par le pod

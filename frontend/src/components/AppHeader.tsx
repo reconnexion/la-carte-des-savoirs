@@ -45,8 +45,8 @@ const AppHeader = ({ onOpenProfile, isMobile }: Props) => {
             components: { Button: { defaultGhostBorderColor: 'rgba(255,255,255,0.6)' } }
           }}
         >
-          <Button ghost icon={<CheckSquareOutlined />} onClick={onOpenProfile} aria-label="Mes compétences">
-            {!isMobile && 'Mes compétences'}
+          <Button ghost icon={<CheckSquareOutlined />} onClick={onOpenProfile} aria-label="Mes savoirs">
+            {!isMobile && 'Mes savoirs'}
           </Button>
         </ConfigProvider>
         <UserMenu isMobile={isMobile} />

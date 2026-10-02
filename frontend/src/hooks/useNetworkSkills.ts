@@ -206,8 +206,8 @@ export const useNetworkSkills = (skillsCatalog: SkillCatalogEntry[], gradesCatal
             // profile whenever it's PUT with vcard:hasAddress set (see AddressEditor.tsx) — already
             // right here in the same profile record we fetched for name/photo/skills, no extra
             // request needed. The Location resource itself stays private; this app never reads it
-            // directly. Note this is the *exact* geocoded position, not a jittered approximation —
-            // see the README/AddressEditor for the current state of that tradeoff.
+            // directly. The Pod provider fuzzes that position (1 km radius) before storing it on the
+            // profile, so this is never the exact address.
             let lat: number | undefined;
             let lng: number | undefined;
             const geo = profile['vcard:hasGeo'];

@@ -75,7 +75,7 @@ jobs:
           # Ignored by the backend image, which takes no build argument
           build-args: |
             VITE_APP_NAME=${{ steps.env.outputs.app_name }}
-            VITE_APP_DESCRIPTION=Partagez vos savoirs et compétences avec votre réseau
+            VITE_APP_DESCRIPTION=Partagez vos savoirs avec votre réseau
             VITE_APP_LANG=fr
             VITE_BACKEND_URL=https://${{ steps.env.outputs.domain }}/api/
             VITE_BACKEND_CLIENT_ID=https://${{ steps.env.outputs.domain }}/api/app

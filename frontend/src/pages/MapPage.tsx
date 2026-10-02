@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Layout, Spin, Alert, App, Grid, Button } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router';
-import { useList } from '@refinedev/core';
+import { useGetIdentity, useList } from '@refinedev/core';
 import AppHeader from '../components/AppHeader';
 import CategoryMenu from '../components/CategoryMenu';
 import NetworkMap from '../components/NetworkMap';
@@ -11,6 +11,8 @@ import ProfileDialog from '../components/ProfileDialog';
 import { useNetworkSkills } from '../hooks/useNetworkSkills';
 import { useCatalogs } from '../hooks/useCatalogs';
 import { parseHandle, userProfilePath } from '../config/webfinger';
+import useNodeinfo from '../hooks/useNodeinfo';
+import urlJoin from '../utils/urlJoin';
 
 const { Content } = Layout;
 
@@ -115,6 +117,18 @@ const MapPage = () => {
     pollTimers.current = [1000, 3000, 6000, 10000].map(delay => setTimeout(refetchBoth, delay));
   };
 
+  // Only contacts appear on the map, so a brand new user typically sees nobody but themselves: say
+  // why, and point to the Pod provider's own network page (found via nodeinfo, like UserMenu's
+  // links) to invite people. Only once the user has added a skill: that comes first (see the
+  // reminder banner above), even if they closed that reminder without adding one.
+  const { data: identity } = useGetIdentity<{ id: string }>();
+  const { data: nodeinfo } = useNodeinfo(identity?.id ? new URL(identity.id).host : undefined);
+  const frontendUrl = nodeinfo?.metadata?.frontend_url;
+  const [networkBannerClosed, setNetworkBannerClosed] = useState(false);
+  const nobodyElseOnMap = !members.some(member => !member.isSelf && member.lat !== undefined && member.lng !== undefined);
+  const showNetworkBanner =
+    hasLoadedOnce && !membersLoading && hasOwnExperiences && nobodyElseOnMap && !networkBannerClosed;
+
   const handleProfileDialogClose = () => {
     setProfileDialogOpen(false);
     if (!hasOwnExperiences) setShowReminderBanner(true);
@@ -153,11 +167,36 @@ const MapPage = () => {
               showIcon
               closable
               onClose={() => setShowReminderBanner(false)}
-              message="Ajoutez au moins une compétence pour apparaître sur la carte."
-              action={
-                <a onClick={() => setProfileDialogOpen(true)} style={{ cursor: 'pointer' }}>
-                  Compléter mon profil
-                </a>
+              // Link inline rather than as an `action`, which takes a whole column on mobile.
+              message={
+                <>
+                  <a onClick={() => setProfileDialogOpen(true)} style={{ cursor: 'pointer' }}>
+                    Ajoutez au moins un savoir
+                  </a>{' '}
+                  pour apparaître sur la carte.
+                </>
+              }
+            />
+          )}
+          {showNetworkBanner && (
+            <Alert
+              banner
+              type="info"
+              showIcon
+              closable
+              onClose={() => setNetworkBannerClosed(true)}
+              message={
+                <>
+                  Seuls vos contacts apparaissent sur la carte.{' '}
+                  {frontendUrl ? (
+                    <a href={urlJoin(frontendUrl, 'network')} target="_blank" rel="noopener noreferrer">
+                      Invitez vos proches
+                    </a>
+                  ) : (
+                    'Invitez vos proches'
+                  )}{' '}
+                  à rejoindre votre réseau !
+                </>
               }
             />
           )}

@@ -32,7 +32,7 @@ const resolveOwnSkills = (records: any[], skills: SkillCatalogEntry[], grades: G
     const category = skill?.parentId ? skills.find(entry => entry.id === skill.parentId) : undefined;
     return {
       uri: record.id,
-      skillLabel: skill?.label ?? 'Compétence inconnue',
+      skillLabel: skill?.label ?? 'Savoir inconnu',
       categoryLabel: category?.label,
       gradeLabel: grade?.label ?? '',
       gradePosition: grade?.position ?? 0
@@ -81,7 +81,7 @@ const ProfileDialog = ({ open, onClose }: Props) => {
       experiencesQuery.refetch();
       setAddingSkill(false);
     } catch {
-      message.error("Impossible d'ajouter cette compétence pour le moment.");
+      message.error("Impossible d'ajouter ce savoir pour le moment.");
     }
   };
 
@@ -90,7 +90,7 @@ const ProfileDialog = ({ open, onClose }: Props) => {
       await deleteExperience({ resource: 'experiences', id: uri });
       experiencesQuery.refetch();
     } catch {
-      message.error('Impossible de supprimer cette compétence pour le moment.');
+      message.error('Impossible de supprimer ce savoir pour le moment.');
     }
   };
 
@@ -105,7 +105,7 @@ const ProfileDialog = ({ open, onClose }: Props) => {
         <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setAddingSkill(false)} style={{ marginBottom: 16 }}>
           Retour
         </Button>
-        <Title level={4}>Ajouter une compétence</Title>
+        <Title level={4}>Ajouter un savoir</Title>
         <SkillPicker skills={skills} grades={grades} onAdd={handleAdd} loading={createMutation.isPending} />
       </Modal>
     );
@@ -122,7 +122,7 @@ const ProfileDialog = ({ open, onClose }: Props) => {
 
       {!experiencesQuery.isLoading && ownSkills.length === 0 && (
         <Paragraph type="secondary">
-          Ajoutez au moins une compétence pour apparaître sur la carte. N'hésitez pas à indiquer "Débutant" : le but
+          Ajoutez au moins un savoir pour apparaître sur la carte. N'hésitez pas à indiquer "Débutant" : le but
           de la carte est de favoriser l'apprentissage de tous, pas seulement de montrer des experts !
         </Paragraph>
       )}
@@ -132,15 +132,15 @@ const ProfileDialog = ({ open, onClose }: Props) => {
           type="warning"
           showIcon
           style={{ marginBottom: 16 }}
-          message="Sans adresse, vous n'apparaîtrez pas sur la carte malgré vos compétences déclarées."
+          message="Sans adresse, vous n'apparaîtrez pas sur la carte malgré vos savoirs déclarés."
         />
       )}
 
-      <Title level={4}>Mes compétences</Title>
+      <Title level={4}>Mes savoirs</Title>
       <List
         loading={experiencesQuery.isLoading}
         dataSource={ownSkills}
-        locale={{ emptyText: "Vous n'avez pas encore déclaré de compétence." }}
+        locale={{ emptyText: "Vous n'avez pas encore déclaré de savoir." }}
         renderItem={item => (
           <List.Item actions={[<Button type="text" icon={<DeleteOutlined />} onClick={() => handleDelete(item.uri)} />]}>
             <Space align="center">
@@ -154,7 +154,7 @@ const ProfileDialog = ({ open, onClose }: Props) => {
 
       {!catalogsLoading && (
         <Button type="dashed" icon={<PlusOutlined />} onClick={() => setAddingSkill(true)} style={{ marginTop: 16 }}>
-          Ajouter une compétence
+          Ajouter un savoir
         </Button>
       )}
 

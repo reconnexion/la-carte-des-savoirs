@@ -29,7 +29,7 @@ const CategoryMenu = ({ skills, selectedSkillId, onSelect, isMobile, mobileOpen,
   const [collapsed, setCollapsed] = useState(false);
 
   const items = [
-    { key: ALL_KEY, icon: <AppstoreOutlined />, label: 'Toutes les compétences' },
+    { key: ALL_KEY, icon: <AppstoreOutlined />, label: 'Tous les savoirs' },
     ...tree.map(category => ({
       key: category.id,
       icon: getCategoryIcon(category.label),

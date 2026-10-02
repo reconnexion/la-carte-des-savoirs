@@ -95,7 +95,7 @@ module.exports = {
         await ctx.call('pod-notifications.send', {
           template: {
             title: {
-              fr: '{{#if skillLabel}}{{emitterProfile.vcard:given-name}} a recommandé votre compétence « {{skillLabel}} »{{else}}{{emitterProfile.vcard:given-name}} a recommandé une de vos compétences{{/if}}',
+              fr: '{{#if skillLabel}}{{emitterProfile.vcard:given-name}} a recommandé votre savoir « {{skillLabel}} »{{else}}{{emitterProfile.vcard:given-name}} a recommandé un de vos savoirs{{/if}}',
               en: '{{#if skillLabel}}{{emitterProfile.vcard:given-name}} recommended your skill "{{skillLabel}}"{{else}}{{emitterProfile.vcard:given-name}} recommended one of your skills{{/if}}'
             },
             content: '{{activity.content}}',
