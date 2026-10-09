@@ -13,11 +13,13 @@ import { i18nProvider } from './i18n';
 import AppGuard from './components/AppGuard';
 import MapPage from './pages/MapPage';
 import { PRIMARY_COLOR } from './config/theme';
+import Banner from './Banner';
 
 const App = () => (
   <BrowserRouter>
     <ConfigProvider locale={frFR} theme={{ ...RefineThemes.Purple, token: { ...RefineThemes.Purple.token, colorPrimary: PRIMARY_COLOR } }}>
       <AntdApp>
+        <Banner />
         <Refine
           authProvider={authProvider}
           dataProvider={dataProvider}
