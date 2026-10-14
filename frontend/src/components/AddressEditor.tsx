@@ -67,7 +67,12 @@ const AddressEditor = ({ onLocationChange }: Props) => {
         await updateLocation({
           resource: 'location',
           id: locationUri,
-          values: { '@type': 'vcard:Location', 'vcard:given-name': 'Domicile', 'vcard:hasAddress': addressFields }
+          values: {
+            '@type': 'vcard:Location',
+            'vcard:given-name': 'Domicile',
+            'vcard:hasAddress': addressFields,
+            'vcard:note': undefined
+          }
         });
       } else if (profile) {
         const { data: newLocation } = await createLocation({
