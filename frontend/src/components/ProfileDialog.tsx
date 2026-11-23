@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Modal, Typography, List, Tag, Button, Avatar, Space, Divider, Alert, App } from 'antd';
-import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
-import { useCreate, useDelete, useGetIdentity, useList } from '@refinedev/core';
+import { Modal, Typography, List, Tag, Button, Avatar, Space, Divider, Alert, App, Input, Radio } from 'antd';
+import { ArrowLeftOutlined, DeleteOutlined, EditOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
+import { useCreate, useDelete, useGetIdentity, useList, useUpdate } from '@refinedev/core';
 import SkillPicker from './SkillPicker';
 import AddressEditor from './AddressEditor';
 import { useCatalogs } from '../hooks/useCatalogs';
@@ -14,6 +14,7 @@ const { Title, Text, Paragraph } = Typography;
 
 const PAIR_EXPERIENCE_SKILL = ['http://virtual-assembly.org/ontologies/pair#experienceSkill', 'pair:experienceSkill'];
 const PAIR_EXPERIENCE_GRADE = ['http://virtual-assembly.org/ontologies/pair#experienceGrade', 'pair:experienceGrade'];
+const AS_SUMMARY = ['https://www.w3.org/ns/activitystreams#summary', 'as:summary'];
 
 const firstOf = (record: Record<string, any>, keys: string[]): any => keys.map(key => record[key]).find(Boolean);
 const asId = (value: unknown): string | undefined => {
@@ -32,10 +33,13 @@ const resolveOwnSkills = (records: any[], skills: SkillCatalogEntry[], grades: G
     const category = skill?.parentId ? skills.find(entry => entry.id === skill.parentId) : undefined;
     return {
       uri: record.id,
+      skillId: skillId ?? '',
       skillLabel: skill?.label ?? 'Savoir inconnu',
       categoryLabel: category?.label,
+      gradeId: gradeId ?? '',
       gradeLabel: grade?.label ?? '',
-      gradePosition: grade?.position ?? 0
+      gradePosition: grade?.position ?? 0,
+      summary: firstOf(record, AS_SUMMARY) ?? ''
     };
   });
 
@@ -61,8 +65,12 @@ const ProfileDialog = ({ open, onClose }: Props) => {
   });
   const { mutateAsync: createExperience, mutation: createMutation } = useCreate();
   const { mutateAsync: deleteExperience } = useDelete();
+  const { mutateAsync: updateExperience, mutation: updateMutation } = useUpdate();
 
   const [addingSkill, setAddingSkill] = useState(false);
+  const [editingSkill, setEditingSkill] = useState<(typeof ownSkills)[0] | null>(null);
+  const [editGradeId, setEditGradeId] = useState('');
+  const [editSummary, setEditSummary] = useState('');
   const [locationUri, setLocationUri] = useState<string>();
   const [addressChecked, setAddressChecked] = useState(false);
 
@@ -94,10 +102,65 @@ const ProfileDialog = ({ open, onClose }: Props) => {
     }
   };
 
+  const handleEditOpen = (item: (typeof ownSkills)[0]) => {
+    setEditingSkill(item);
+    setEditGradeId(item.gradeId);
+    setEditSummary(item.summary);
+  };
+
+  const handleEdit = async () => {
+    if (!editingSkill) return;
+    try {
+      await updateExperience({
+        resource: 'experiences',
+        id: editingSkill.uri,
+        values: {
+          'http://virtual-assembly.org/ontologies/pair#experienceSkill': { '@id': editingSkill.skillId },
+          'http://virtual-assembly.org/ontologies/pair#experienceGrade': { '@id': editGradeId },
+          ...(editSummary ? { 'https://www.w3.org/ns/activitystreams#summary': editSummary } : {})
+        }
+      });
+      experiencesQuery.refetch();
+      setEditingSkill(null);
+    } catch {
+      message.error('Impossible de modifier ce savoir pour le moment.');
+    }
+  };
+
   const handleClose = () => {
     setAddingSkill(false);
+    setEditingSkill(null);
     onClose();
   };
+
+  if (editingSkill) {
+    return (
+      <Modal open={open} onCancel={handleClose} footer={null} width={640} title={null} destroyOnHidden>
+        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setEditingSkill(null)} style={{ marginBottom: 16 }}>
+          Retour
+        </Button>
+        <Title level={4}>Modifier ce savoir</Title>
+        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+          <Space align="center">
+            <Avatar size={32} icon={getCategoryIcon(editingSkill.categoryLabel)} style={{ background: PRIMARY_COLOR_BG, color: PRIMARY_COLOR }} />
+            <Text strong>{editingSkill.skillLabel}</Text>
+          </Space>
+          <Radio.Group value={editGradeId} onChange={e => setEditGradeId(e.target.value)} optionType="button">
+            {grades.map(grade => <Radio.Button key={grade.id} value={grade.id}>{grade.label}</Radio.Button>)}
+          </Radio.Group>
+          <Input.TextArea
+            placeholder="Dites-en un peu plus sur votre expérience (facultatif)"
+            value={editSummary}
+            onChange={e => setEditSummary(e.target.value)}
+            rows={2}
+          />
+          <Button type="primary" onClick={handleEdit} loading={updateMutation.isPending} disabled={!editGradeId}>
+            Enregistrer
+          </Button>
+        </Space>
+      </Modal>
+    );
+  }
 
   if (addingSkill) {
     return (
@@ -142,7 +205,10 @@ const ProfileDialog = ({ open, onClose }: Props) => {
         dataSource={ownSkills}
         locale={{ emptyText: "Vous n'avez pas encore déclaré de savoir." }}
         renderItem={item => (
-          <List.Item actions={[<Button type="text" icon={<DeleteOutlined />} onClick={() => handleDelete(item.uri)} />]}>
+          <List.Item actions={[
+            <Button type="text" icon={<EditOutlined />} onClick={() => handleEditOpen(item)} />,
+            <Button type="text" icon={<DeleteOutlined />} onClick={() => handleDelete(item.uri)} />
+          ]}>
             <Space align="center">
               <Avatar size={32} icon={getCategoryIcon(item.categoryLabel)} style={{ background: PRIMARY_COLOR_BG, color: PRIMARY_COLOR }} />
               <Text strong>{item.skillLabel}</Text>
